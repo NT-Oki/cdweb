@@ -1,40 +1,59 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Banner from './components/Banner';
-import MovieList from './components/MovieList';
-import MovieDetail from './components/MovieDetail';
-import Footer from './components/Footer';
-import Header from './components/Header';
-import Login from './components/Login';
-import Register from './components/Register';
-import SeatSelector from './components/SeatSelector';
-import ShowtimeSchedule from './components/ShowtimeSchedule';
-import CinemaList from './components/CinemaList ';
+// import 'src/global.css';
 
-function App() {
+import { useEffect } from 'react';
+
+import Fab from '@mui/material/Fab';
+
+import { usePathname } from './components/routes/hooks';
+
+import { ThemeProvider } from './components/admin/theme/theme-provider';
+
+import { Iconify } from './components/admin/components/iconify';
+
+// ----------------------------------------------------------------------
+
+type AppProps = {
+  children: React.ReactNode;
+};
+
+export default function App({ children }: AppProps) {
+  useScrollToTop();
+
+  const githubButton = () => (
+    <Fab
+      size="medium"
+      aria-label="Github"
+      href="https://github.com/minimal-ui-kit/material-kit-react"
+      sx={{
+        zIndex: 9,
+        right: 20,
+        bottom: 20,
+        width: 48,
+        height: 48,
+        position: 'fixed',
+        bgcolor: 'grey.800',
+      }}
+    >
+      <Iconify width={24} icon="socials:github" sx={{ '--color': 'white' }} />
+    </Fab>
+  );
+
   return (
-    <Router>
-      <div>
-        <Header />
-        {/* <Navbar /> */}
-        {/* <Banner /> */}
-        <Routes>
-        <Route path="/" element={<Banner />} />
-          <Route path="/movielist" element={<MovieList />} />
-          <Route path="/movie/:id" element={<MovieDetail />} />
-          <Route path="/login" element={<Login/>} />
-          <Route path="/register" element={<Register/>} />
-          <Route path="/seatselector" element={<SeatSelector />} />
-          <Route path="/showtimeschedule" element={<ShowtimeSchedule />} />
-          <Route path="/cinemalist" element={<CinemaList />} />
-
-        </Routes>
-     
-        <Footer />
-      </div>
-    </Router>
+    <ThemeProvider>
+      {children}
+      {githubButton()}
+    </ThemeProvider>
   );
 }
 
-export default App;
+// ----------------------------------------------------------------------
+
+function useScrollToTop() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
