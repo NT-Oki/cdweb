@@ -17,7 +17,7 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String roomName;
-    private int qualitySeat;
+    private int quantitySeat;
     private String status;
     private String description;
 }

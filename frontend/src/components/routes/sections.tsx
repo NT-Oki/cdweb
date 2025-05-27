@@ -51,7 +51,7 @@ export const routesSection: RouteObject[] = [
     ),
   },
   {
-    path:'/',
+    path:'/admin/',
     element: (
       <DashboardLayout>
         <Suspense fallback={renderFallback()}>
