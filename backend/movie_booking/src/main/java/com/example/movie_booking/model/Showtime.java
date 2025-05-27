@@ -25,7 +25,7 @@ public class Showtime {
     private Room room;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate showDate;
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime startTime ;
 
 }
