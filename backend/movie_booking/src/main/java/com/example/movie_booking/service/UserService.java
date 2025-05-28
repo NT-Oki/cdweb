@@ -1,4 +1,4 @@
-package com.example.movie_booking.service.implement;
+package com.example.movie_booking.service;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import com.example.movie_booking.dto.AdminRegisterDto;
@@ -7,7 +7,6 @@ import com.example.movie_booking.model.Role;
 import com.example.movie_booking.model.User;
 import com.example.movie_booking.repository.IRoleRepository;
 import com.example.movie_booking.repository.IUserRepository;
-import com.example.movie_booking.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class UserService implements IUserService {
+public class UserService {
     @Autowired
     private IRoleRepository roleRepository;
 
@@ -25,8 +24,6 @@ public class UserService implements IUserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-
-    @Override
     public User convertToUser(RegisterDto dto, String roleName) {
         Role role = roleRepository.findByName(roleName);
         if (role == null) {
@@ -49,7 +46,6 @@ public class UserService implements IUserService {
                 .build();
     }
 
-    @Override
     public User convertToUser(AdminRegisterDto dto) {
         String roleName = dto.getRole();
         Role role = roleRepository.findByName(roleName);
@@ -73,27 +69,18 @@ public class UserService implements IUserService {
                 .build();
     }
 
-    @Override
     public User findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
-
-    @Override
     public void save(User user) {
         userRepository.save(user);
     }
-
-    @Override
     public List<User> findAllMembers() {
         return userRepository.findAll();
     }
-
-    @Override
     public User findById(Long id) {
         return userRepository.findById(id).get();
     }
-
-    @Override
     public void delete(User user) {
         userRepository.delete(user);
     }

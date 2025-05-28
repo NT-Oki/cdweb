@@ -1,11 +1,12 @@
 package com.example.movie_booking.controller;
 
+import com.example.movie_booking.service.UserService;
 import jakarta.validation.Valid;
 import com.example.movie_booking.config.JwtTokenUtil;
 import com.example.movie_booking.dto.request.LoginDto;
 import com.example.movie_booking.model.User;
 import com.example.movie_booking.security.TokenBlacklist;
-import com.example.movie_booking.service.IUserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -15,19 +16,14 @@ import java.util.Map;
 
 @RestController
 public class AuthController {
-    private final IUserService userService;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtTokenUtil jwtTokenUtil;
-    private final TokenBlacklist tokenBlacklist;
-
-    public AuthController(IUserService userService,
-                          PasswordEncoder passwordEncoder,
-                          JwtTokenUtil jwtTokenUtil, TokenBlacklist tokenBlacklist) {
-        this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtTokenUtil = jwtTokenUtil;
-        this.tokenBlacklist = tokenBlacklist;
-    }
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private TokenBlacklist tokenBlacklist;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto) {
