@@ -11,7 +11,7 @@
  Target Server Version : 100432 (10.4.32-MariaDB)
  File Encoding         : 65001
 
- Date: 28/05/2025 01:52:17
+ Date: 28/05/2025 14:53:25
 */
 
 SET NAMES utf8mb4;
@@ -25,17 +25,14 @@ CREATE TABLE `booking`  (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `code_booking` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   `date_booking` date NULL DEFAULT NULL,
-  `total_amount` double NOT NULL,
   `booking_status_id` bigint NULL DEFAULT NULL,
-  `seat_id` bigint NULL DEFAULT NULL,
   `showtime_id` bigint NULL DEFAULT NULL,
   `user_id` bigint NULL DEFAULT NULL,
+  `total_amount` int NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `FKm3d0q9s1hos02eamx9wrsupaq`(`booking_status_id` ASC) USING BTREE,
-  INDEX `FK7ryitbom1ln9okwlj2t9tt9ym`(`seat_id` ASC) USING BTREE,
   INDEX `FKqpvw4sqntugqnqtrwkimyqe4w`(`showtime_id` ASC) USING BTREE,
   INDEX `FKkgseyy7t56x7lkjgu3wah5s3t`(`user_id` ASC) USING BTREE,
-  CONSTRAINT `FK7ryitbom1ln9okwlj2t9tt9ym` FOREIGN KEY (`seat_id`) REFERENCES `seat` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `FKkgseyy7t56x7lkjgu3wah5s3t` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `FKm3d0q9s1hos02eamx9wrsupaq` FOREIGN KEY (`booking_status_id`) REFERENCES `booking_status` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `FKqpvw4sqntugqnqtrwkimyqe4w` FOREIGN KEY (`showtime_id`) REFERENCES `showtime` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
@@ -43,6 +40,26 @@ CREATE TABLE `booking`  (
 
 -- ----------------------------
 -- Records of booking
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for booking_seat
+-- ----------------------------
+DROP TABLE IF EXISTS `booking_seat`;
+CREATE TABLE `booking_seat`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `price` int NOT NULL,
+  `booking_id` bigint NULL DEFAULT NULL,
+  `seat_id` bigint NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `FK3gcy7w2me25kc4qp8nobmg4q6`(`booking_id` ASC) USING BTREE,
+  INDEX `FK3y806wtfhomwvu02t1u7u2136`(`seat_id` ASC) USING BTREE,
+  CONSTRAINT `FK3gcy7w2me25kc4qp8nobmg4q6` FOREIGN KEY (`booking_id`) REFERENCES `booking` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `FK3y806wtfhomwvu02t1u7u2136` FOREIGN KEY (`seat_id`) REFERENCES `seat` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of booking_seat
 -- ----------------------------
 
 -- ----------------------------
@@ -177,15 +194,15 @@ INSERT INTO `movie` VALUES (12, 'Tom Cruise', 'https://iguov8nhvyobj.vcdn.cloud/
 DROP TABLE IF EXISTS `role`;
 CREATE TABLE `role`  (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of role
 -- ----------------------------
-INSERT INTO `role` VALUES (1, NULL, NULL);
+INSERT INTO `role` VALUES (1, 'ROLE_USER');
+INSERT INTO `role` VALUES (2, 'ROLE_ADMIN');
 
 -- ----------------------------
 -- Table structure for room
@@ -702,10 +719,11 @@ CREATE TABLE `user`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `FKn82ha3ccdebhokx3a8fgdqeyy`(`role_id` ASC) USING BTREE,
   CONSTRAINT `FKn82ha3ccdebhokx3a8fgdqeyy` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of user
 -- ----------------------------
+INSERT INTO `user` VALUES (1, 'Hà Nội', 'https://canvato.net/2ETUv', '123456789', 'i0zdT', 'test@example.com', b'1', 'Nguyễn Văn A', '$2a$10$Lm/qk3./DPAuZHwfK1W3iux6MWUGEF/2R5iGqymQZG/i.C.qsX5B.', '0987654321', b'1', 2);
 
 SET FOREIGN_KEY_CHECKS = 1;
