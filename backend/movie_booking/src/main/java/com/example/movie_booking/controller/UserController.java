@@ -1,9 +1,10 @@
 package com.example.movie_booking.controller;
 
+import com.example.movie_booking.service.UserService;
 import jakarta.validation.Valid;
 import com.example.movie_booking.dto.RegisterDto;
 import com.example.movie_booking.model.User;
-import com.example.movie_booking.service.IUserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -16,11 +17,8 @@ import java.util.Map;
 
 @RestController
 public class UserController {
-    private final IUserService userService;
-
-    public UserController(IUserService userService) {
-        this.userService = userService;
-    }
+    @Autowired
+    private UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterDto form, BindingResult result) {

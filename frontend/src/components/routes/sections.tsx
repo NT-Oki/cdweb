@@ -10,6 +10,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { AuthLayout } from '../admin/layouts/auth';
 import { DashboardLayout } from '../admin/layouts/dashboard';
 import { Hello } from '../Hello';
+import ShowtimeSchedule from '../ShowtimeSchedule';
 // import Home from '../Home';
 
 // ----------------------------------------------------------------------
@@ -79,5 +80,14 @@ export const routesSection: RouteObject[] = [
     element: <Page404 />,
   },
   { path: '*', element: <Page404 /> },
+   {
+    path: '/booking',
+    element: (
+      <AuthLayout>
+      <ShowtimeSchedule></ShowtimeSchedule>
+      </AuthLayout>
+    ),
+  },
+  
 
 ];
