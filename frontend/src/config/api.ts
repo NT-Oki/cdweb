@@ -5,6 +5,7 @@ const MOVIE_URL = `${BASE_URL}/movies`;
 const LOGIN_URL=`${BASE_URL}/login`;
 const REGISTER_URL = `${BASE_URL}/register`;
 const ADMIN_ROOMS_URL = `${ADMIN_URL}/rooms`;
+const ADMIN_USER_URL = `${BASE_URL}/admin/users`;
 
 const API_URLS = {
   BOOKING: {
@@ -25,7 +26,14 @@ const API_URLS = {
       update: (id:number)=>`${ADMIN_ROOMS_URL}/${id}`,
       save: `${ADMIN_ROOMS_URL}/add`,
     }
-  }
+  },
+  ADMIN_USER: {
+    list: `${ADMIN_USER_URL}/list`,
+    add: `${ADMIN_USER_URL}/add`,
+    delete: (id:number) => `${ADMIN_USER_URL}/delete/${id}`,
+    deleteMultiple: `${ADMIN_USER_URL}/delete-multiple`,
+    detail: (id: number) => `${ADMIN_USER_URL}/detail/${id}`,
+  },
 };
 
 

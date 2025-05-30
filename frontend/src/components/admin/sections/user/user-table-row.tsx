@@ -16,13 +16,21 @@ import { Iconify } from '../../components/iconify';
 // ----------------------------------------------------------------------
 
 export type UserProps = {
-  id: string;
-  name: string;
-  role: string;
-  status: string;
-  company: string;
-  avatarUrl: string;
-  isVerified: boolean;
+    id: number;
+    code: string;
+    name: string;
+    cardId: string;
+    email: string;
+    password: string;
+    gender: boolean;
+    status: boolean;
+    phoneNumber: string;
+    avatar: string | null;
+    address: string;
+    role: {
+        id: number;
+        name: string;
+    };
 };
 
 type UserTableRowProps = {
@@ -32,93 +40,89 @@ type UserTableRowProps = {
 };
 
 export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) {
-  const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+    const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
-  const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    setOpenPopover(event.currentTarget);
-  }, []);
+    const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        setOpenPopover(event.currentTarget);
+    }, []);
 
-  const handleClosePopover = useCallback(() => {
-    setOpenPopover(null);
-  }, []);
+    const handleClosePopover = useCallback(() => {
+        setOpenPopover(null);
+    }, []);
 
-  return (
-    <>
-      <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-        <TableCell padding="checkbox">
-          <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
-        </TableCell>
+    return (
+        <>
+            <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
+                <TableCell padding="checkbox">
+                    <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
+                </TableCell>
 
-        <TableCell component="th" scope="row">
-          <Box
-            sx={{
-              gap: 2,
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <Avatar alt={row.name} src={row.avatarUrl} />
-            {row.name}
-          </Box>
-        </TableCell>
+                <TableCell component="th" scope="row">
+                    <Box
+                        sx={{
+                            gap: 2,
+                            display: 'flex',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Avatar alt={row.name} src={row.avatar ?? undefined} />
+                        {row.name}
+                    </Box>
+                </TableCell>
 
-        <TableCell>{row.company}</TableCell>
+                <TableCell>{row.email}</TableCell>
+                <TableCell>{row.phoneNumber}</TableCell>
+                <TableCell>{row.address}</TableCell>
+                <TableCell>{row.role?.name}</TableCell>
+                <TableCell>{row.gender ? 'Nam' : 'Nữ'}</TableCell>
 
-        <TableCell>{row.role}</TableCell>
+                <TableCell>
+                    <Label color={row.status ? 'success' : 'error'}>
+                        {row.status ? 'Hoạt động' : 'Khóa'}
+                    </Label>
+                </TableCell>
 
-        <TableCell align="center">
-          {row.isVerified ? (
-            <Iconify width={22} icon="solar:check-circle-bold" sx={{ color: 'success.main' }} />
-          ) : (
-            '-'
-          )}
-        </TableCell>
+                <TableCell align="right">
+                    <IconButton onClick={handleOpenPopover}>
+                        <Iconify icon="eva:more-vertical-fill" />
+                    </IconButton>
+                </TableCell>
+            </TableRow>
 
-        <TableCell>
-          <Label color={(row.status === 'banned' && 'error') || 'success'}>{row.status}</Label>
-        </TableCell>
+            <Popover
+                open={!!openPopover}
+                anchorEl={openPopover}
+                onClose={handleClosePopover}
+                anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+                <MenuList
+                    disablePadding
+                    sx={{
+                        p: 0.5,
+                        gap: 0.5,
+                        width: 140,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        [`& .${menuItemClasses.root}`]: {
+                            px: 1,
+                            gap: 2,
+                            borderRadius: 0.75,
+                            [`&.${menuItemClasses.selected}`]: { bgcolor: 'action.selected' },
+                        },
+                    }}
+                >
+                    <MenuItem onClick={handleClosePopover}>
+                        <Iconify icon="solar:pen-bold" />
+                        Chỉnh sửa
+                    </MenuItem>
 
-        <TableCell align="right">
-          <IconButton onClick={handleOpenPopover}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
-        </TableCell>
-      </TableRow>
-
-      <Popover
-        open={!!openPopover}
-        anchorEl={openPopover}
-        onClose={handleClosePopover}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <MenuList
-          disablePadding
-          sx={{
-            p: 0.5,
-            gap: 0.5,
-            width: 140,
-            display: 'flex',
-            flexDirection: 'column',
-            [`& .${menuItemClasses.root}`]: {
-              px: 1,
-              gap: 2,
-              borderRadius: 0.75,
-              [`&.${menuItemClasses.selected}`]: { bgcolor: 'action.selected' },
-            },
-          }}
-        >
-          <MenuItem onClick={handleClosePopover}>
-            <Iconify icon="solar:pen-bold" />
-            Edit
-          </MenuItem>
-
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
-            <Iconify icon="solar:trash-bin-trash-bold" />
-            Delete
-          </MenuItem>
-        </MenuList>
-      </Popover>
-    </>
-  );
+                    <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
+                        <Iconify icon="solar:trash-bin-trash-bold" />
+                        Xóa
+                    </MenuItem>
+                </MenuList>
+            </Popover>
+        </>
+    );
 }
