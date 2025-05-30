@@ -43,6 +43,7 @@ public class AuthController {
         response.put("token", token);
         response.put("email", user.getEmail());
         response.put("fullName", user.getName());
+        response.put("role", user.getRole().getName());
 
         return ResponseEntity.ok(response);
     }

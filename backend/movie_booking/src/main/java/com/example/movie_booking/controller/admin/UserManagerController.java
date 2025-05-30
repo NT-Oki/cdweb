@@ -29,7 +29,7 @@ public class UserManagerController {
 
     // Thêm user mới
     @PostMapping("/add")
-    public ResponseEntity<?> add(@Valid @RequestBody AdminRegisterDto form, BindingResult result, @RequestParam String type) {
+    public ResponseEntity<?> add(@Valid @RequestBody AdminRegisterDto form, BindingResult result) {
         Map<String, String> errors = new HashMap<>();
 
         if (!form.getPassword().equals(form.getConfirmPassword())) {
@@ -79,6 +79,36 @@ public class UserManagerController {
         successData.put("message", "Xóa thành công!");
         return ResponseEntity.ok(successData);
     }
+
+    @DeleteMapping("/delete-multiple")
+    public ResponseEntity<?> deleteMultiple(@RequestBody List<Long> userIds) {
+        Map<String, Object> response = new HashMap<>();
+        if (userIds == null || userIds.isEmpty()) {
+            response.put("error", "Danh sách người dùng cần xóa không được để trống.");
+            return ResponseEntity.badRequest().body(response);
+        }
+        int deletedCount = 0;
+        int notFoundCount = 0;
+        for (Long id : userIds) {
+            User user = userService.findById(id);
+            if (user != null) {
+                userService.delete(user);
+                deletedCount++;
+            } else {
+                notFoundCount++;
+            }
+        }
+        response.put("deleted", deletedCount);
+        if (notFoundCount > 0) {
+            response.put("notFound", notFoundCount);
+            response.put("message", "Một số người dùng không tìm thấy.");
+        } else {
+            response.put("message", "Xóa thành công tất cả người dùng.");
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
 
     // Xem chi tiết user theo id
     @GetMapping("/detail/{id}")
