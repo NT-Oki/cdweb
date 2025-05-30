@@ -6,11 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@Builder
-@AllArgsConstructor
+@Data
 @Entity
 public class Room {
     @Id

@@ -23,12 +23,14 @@ export const DashboardPage = lazy(() => import('../admin/pages/dashboard'));
 export const BlogPage = lazy(() => import('../admin/pages/blog'));
 export const UserPage = lazy(() => import('../admin/pages/user'));
 export const SignInPage = lazy(() => import('../admin/pages/sign-in'));
-export const ProductsPage = lazy(() => import('../admin/pages/products'));
+export const Movie = lazy(() => import('../admin/pages/MovieAdmin'));
 export const Page404 = lazy(() => import('../admin/pages/page-not-found'));
 export const Hello = lazy(() => import('../Hello'));
 export const SeatSelector = lazy(() => import('../SeatSelector'));
 export const Checkout =lazy(()=> import(`../Checkout`));
 export const Ticket =lazy(()=> import(`../Ticket`));
+export const ShowTimeAdmin =lazy(()=> import(`../admin/pages/ShowTimeAdmin`));
+export const RoomAdmin =lazy(()=> import(`../admin/pages/RoomAdmin`));
 
 const renderFallback = () => (
   <Box
@@ -87,8 +89,10 @@ export const routesSection: RouteObject[] = [
     children: [
       { path: 'dashboard', element: <DashboardPage /> },
       { path: 'users', element: <UserPage /> },
-      { path: 'movies', element: <ProductsPage /> },
-      { path: 'blog', element: <BlogPage /> },
+      { path: 'movies', element: <Movie /> },
+      { path: 'showtime', element: <ShowTimeAdmin /> },
+      { path: 'room', element: <RoomAdmin /> },
+
     ],
   },
   {

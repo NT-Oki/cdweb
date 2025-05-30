@@ -14,7 +14,7 @@ public class ShowTimeService {
 public Showtime getShowtime(long id) {
     return showTimeRepository.getReferenceById(id);
 }
-//public List<Showtime> getAllShowtimes() {
-//    return showTimeRepository.ge
-//}
+public List<Showtime> getAllShowtimes() {
+    return showTimeRepository.findAll();
+}
 }
