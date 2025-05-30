@@ -8,6 +8,7 @@ import axios from 'axios';
 import API_URLS from '../config/api';
 import Header from './Header';
 import Footer from './Footer';
+import ShowtimeSchedule from './ShowtimeSchedule';
 
 const MovieDetail = () => {
     const { id } = useParams();
@@ -30,7 +31,7 @@ const MovieDetail = () => {
         <Box>
             <Header />
             <Toolbar />
-            <Box px={{ padding: 20 }} sx={{ padding: 10 }}>
+            <Box sx={{ paddingLeft: 20, paddingRight: 20, paddingBottom: 10, paddingTop: 10 }}>
                 {/* Hình + Thông tin: layout 2 cột */}
                 <Box sx={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                     {/* Cột trái: Hình ảnh */}
@@ -85,6 +86,10 @@ const MovieDetail = () => {
                         style={{ borderRadius: '12px' }}
                     />
                 </Box>
+
+                {/* Showtime lịch chiếu */}
+                <Typography variant="h5" sx={{ mt: 6 }}>Lịch chiếu</Typography>
+                <ShowtimeSchedule />
             </Box>
             <Toolbar />
             <Footer />
