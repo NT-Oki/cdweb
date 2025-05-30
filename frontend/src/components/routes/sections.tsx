@@ -9,12 +9,12 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 
 import { AuthLayout } from '../admin/layouts/auth';
 import { DashboardLayout } from '../admin/layouts/dashboard';
-import { Hello } from '../Hello';
 import Login from '../Login';
 import Register from '../Register';
 import MovieList from '../MovieList';
 import MovieDetail from '../MovieDetail';
 import ShowtimeSchedule from '../ShowtimeSchedule';
+// import SeatSelector from '../SeatSelector';
 // import Home from '../Home';
 
 // ----------------------------------------------------------------------
@@ -25,6 +25,10 @@ export const UserPage = lazy(() => import('../admin/pages/user'));
 export const SignInPage = lazy(() => import('../admin/pages/sign-in'));
 export const ProductsPage = lazy(() => import('../admin/pages/products'));
 export const Page404 = lazy(() => import('../admin/pages/page-not-found'));
+export const Hello = lazy(() => import('../Hello'));
+export const SeatSelector = lazy(() => import('../SeatSelector'));
+export const Checkout =lazy(()=> import(`../Checkout`));
+export const Ticket =lazy(()=> import(`../Ticket`));
 
 const renderFallback = () => (
   <Box
@@ -116,14 +120,34 @@ export const routesSection: RouteObject[] = [
     element: <Page404 />,
   },
   { path: '*', element: <Page404 /> },
-   {
-    path: '/booking',
-    element: (
-      <AuthLayout>
-      <ShowtimeSchedule></ShowtimeSchedule>
-      </AuthLayout>
-    ),
+  // {
+  //   path:'/booking',
+  //   element: (
+  //     <DashboardLayout>
+  //       <Suspense fallback={renderFallback()}>
+  //         <Outlet />
+  //       </Suspense>
+  //     </DashboardLayout>
+  //   ),
+  //   children: [
+  //     { path: '/showtime', element: <ShowtimeSchedule /> },
+  //     { path: '/chooseseat', element: <UserPage /> },
+
+  //   ],
+  // },
+    {
+    path: '/book',
+    element: <SeatSelector />,
   },
+    {
+    path: '/checkout',
+    element: <Checkout />,
+  },
+   {
+    path: '/ticket',
+    element: <Ticket />,
+  },
+  
   
 
 ];
