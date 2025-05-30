@@ -89,10 +89,10 @@ export default function Ticket() {
                     </Typography>
                     <Typography fontWeight="bold">ThuThao Cinema</Typography>
                     <Typography>
-                        Suất <strong>12:00</strong> - Thứ Ba, <strong>25/02</strong>
+                        Suất <strong>14:50</strong> - Thứ Sáu, <strong>30/05</strong>
                     </Typography>
                     <Typography>
-                        Phòng chiếu <strong>05</strong> - Ghế <strong>J12</strong>
+                        Phòng chiếu <strong>05</strong> - Ghế <strong>E4, E5, E6</strong>
                     </Typography>
 
                     <Divider sx={{ my: 2 }} />
@@ -102,8 +102,8 @@ export default function Ticket() {
                     </Typography>
 
                     <Box display="flex" justifyContent="space-between">
-                        <Typography>1x Ghế đơn</Typography>
-                        <Typography>45,000 đ</Typography>
+                        <Typography>3x Ghế đơn</Typography>
+                        <Typography>210,000 đ</Typography>
                     </Box>
                     <Box display="flex" justifyContent="space-between">
                         <Typography>Phí tiện ích</Typography>
@@ -114,7 +114,7 @@ export default function Ticket() {
 
                     <Box display="flex" justifyContent="space-between">
                         <Typography fontWeight="bold">Tổng</Typography>
-                        <Typography fontWeight="bold">47,500 đ</Typography>
+                        <Typography fontWeight="bold">212,500 đ</Typography>
                     </Box>
                       <Box
           sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt:3 }}

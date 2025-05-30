@@ -9,10 +9,31 @@ import API_URLS from '../config/api';
 import Header from './Header';
 import Footer from './Footer';
 import ShowtimeSchedule from './ShowtimeSchedule';
+import ShowtimeSchedule2 from './ShowtimeSchedule2';
 
 const MovieDetail = () => {
+ interface Movie {
+  id: number;
+  nameMovie: string;
+  releaseDate: string;     // giữ string nếu backend trả ngày dưới dạng chuỗi ISO
+  durationMovie: string;
+  actor: string;
+  director: string;
+  studio: string;
+  content: string;
+  trailer: string;
+  avatar: string;
+  statusFilmId: StatusFilm;  // kiểu này là object hoặc bạn có thể chỉ để id nếu backend trả id
+}
+
+interface StatusFilm {
+  id: number;
+  name: string;
+  // các thuộc tính khác của StatusFilm nếu có
+}
     const { id } = useParams();
-    const [movie, setMovie] = useState(null);
+  const [movie, setMovie] = useState<Movie | null>(null);
+
 
     useEffect(() => {
         if (!id) return;
@@ -26,6 +47,20 @@ const MovieDetail = () => {
     }
 
     const castList = movie.actor ? movie.actor.split(',') : [];
+    const getEmbedUrl=(url: string)=> {
+  if (!url) return "";
+
+  if (url.includes("youtu.be/")) {
+    const videoId = url.split("youtu.be/")[1];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+
+  if (url.includes("watch?v=")) {
+    return url.replace("watch?v=", "embed/");
+  }
+
+  return url; // Nếu đã là embed hoặc link khác
+}
 
     return (
         <Box>
@@ -80,7 +115,7 @@ const MovieDetail = () => {
                     <iframe
                         width="100%"
                         height="450"
-                        src={movie.trailer}
+                        src={getEmbedUrl(movie.trailer)}
                         title="Trailer"
                         allowFullScreen
                         style={{ borderRadius: '12px' }}
@@ -89,7 +124,7 @@ const MovieDetail = () => {
 
                 {/* Showtime lịch chiếu */}
                 <Typography variant="h5" sx={{ mt: 6 }}>Lịch chiếu</Typography>
-                <ShowtimeSchedule />
+                <ShowtimeSchedule2/>
             </Box>
             <Toolbar />
             <Footer />

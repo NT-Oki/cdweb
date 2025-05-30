@@ -78,8 +78,8 @@ const CheckoutPage = () => {
             sx={{ display: "flex", justifyContent: "space-between", mb: 2 ,borderBottom: "1px solid rgba(0, 0, 0, 0.12)",p:1}}
           >
             <Typography>Ghế Đơn</Typography>
-            <Typography>1</Typography>
-            <Typography>45.000 đ</Typography>
+            <Typography>3</Typography>
+            <Typography>210.000 đ</Typography>
           </Box>
           <Box
             sx={{ display: "flex", justifyContent: "space-between", mb: 2,borderBottom: "1px solid rgba(0, 0, 0, 0.12)",p:1 }}
@@ -89,7 +89,7 @@ const CheckoutPage = () => {
           </Box>
           <Box  sx={{ display: "flex", justifyContent: "space-between", mb: 2,p:1 }}>
             <Typography fontWeight="bold">Tổng</Typography>
-            <Typography fontWeight="bold">47.500 đ</Typography>
+            <Typography fontWeight="bold">212.500 đ</Typography>
           </Box>
         </Box>
           {/* Form thông tin cá nhân */}
@@ -126,18 +126,18 @@ const CheckoutPage = () => {
             <strong>Phim Điện Ảnh Doraemon: Nobita và Cuộc Phiêu Lưu Vào Thế Giới Trong Tranh</strong>
           </Typography>
           <Typography variant="body2" sx={{ mt: 1 }}>
-            <strong>Cinestar Sinh Viên</strong>
+            <strong>ThuThao Cinema</strong>
           </Typography>
           <Typography variant="body2">
             Suất <strong>14:50 30/05/2025</strong>
           </Typography>
           <Typography variant="body2">
-            Phòng chiếu <strong>05</strong> – Ghế <strong>O06</strong>
+            Phòng chiếu <strong>05</strong> – Ghế <strong>E4, E5, E6</strong>
           </Typography>
 
           <Box sx={{ mt: 2 }}>
             <Typography fontWeight="bold" variant="h6">
-              Tổng đơn hàng: 47.500 đ
+              Tổng đơn hàng: 212.500 đ
             </Typography>
           </Box>
 

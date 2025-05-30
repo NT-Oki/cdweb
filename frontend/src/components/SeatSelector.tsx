@@ -123,12 +123,12 @@ export default function SeatSelection() {
 
       <Paper elevation={2} sx={{ p: 2, mt: 4, width: 300 }}>
         <Typography variant="subtitle1">Thông tin vé</Typography>
-        <Typography variant="body2">Phim: Doraemon Movie 44</Typography>
+        <Typography variant="body2">Phim Điện Ảnh Doraemon: Nobita và Cuộc Phiêu Lưu Vào Thế Giới Trong Tranh</Typography>
         <Typography variant="body2">Suất: 14:50 - 30/05/2025</Typography>
         <Typography variant="body2">Phòng chiếu: 05</Typography>
         <Typography variant="body2">Ghế: {selectedSeats.join(", ") || "(chưa chọn)"}</Typography>
         <Typography variant="body2" sx={{ mt: 1 }}>
-          Tổng: {selectedSeats.length * 65000} đ
+          Tổng: {selectedSeats.length * 70000} đ
         </Typography>
         <Button variant="contained" fullWidth sx={{ mt: 2 }}
         onClick={checkout}

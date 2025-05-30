@@ -38,7 +38,7 @@ const Login = () => {
         // Điều hướng sang trang khác nếu cần
         window.location.href = "/"; // hoặc dùng useNavigate nếu bạn dùng React Router
       }
-    } catch (error) {
+    } catch (error: any) {
       alert("Đã xảy ra lỗi kết nối: " + error.message);
     }
   };
@@ -47,7 +47,7 @@ const Login = () => {
     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
       <Paper elevation={4} sx={{ padding: 4, width: 400 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Đăng nhập tài khoản CGV
+          Đăng nhập tài khoản 
         </Typography>
 
         <TextField

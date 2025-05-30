@@ -65,7 +65,7 @@ const Register = () => {
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
         <Paper elevation={4} sx={{ padding: 4, width: 400 }}>
           <Typography variant="h5" fontWeight="bold" gutterBottom>
-            Đăng ký tài khoản CGV
+            Đăng ký tài khoản 
           </Typography>
 
           <TextField
