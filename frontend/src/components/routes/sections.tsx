@@ -10,6 +10,10 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { AuthLayout } from '../admin/layouts/auth';
 import { DashboardLayout } from '../admin/layouts/dashboard';
 import { Hello } from '../Hello';
+import Login from '../Login';
+import Register from '../Register';
+import MovieList from '../MovieList';
+import MovieDetail from '../MovieDetail';
 import ShowtimeSchedule from '../ShowtimeSchedule';
 // import Home from '../Home';
 
@@ -45,12 +49,28 @@ const renderFallback = () => (
 export const routesSection: RouteObject[] = [
    {
     path: '/',
-    element: (
-      <Suspense fallback={renderFallback()}>
-        <Hello />
-      </Suspense>
-    ),
+       element: (
+           <Suspense fallback={renderFallback()}>
+               <MovieList />
+           </Suspense>
+       ),
   },
+    {
+        path: '/movie',
+        element: (
+            <Suspense fallback={renderFallback()}>
+                <MovieList />
+            </Suspense>
+        ),
+    },
+    {
+        path: '/movie/:id',
+        element: (
+            <Suspense fallback={renderFallback()}>
+                <MovieDetail />
+            </Suspense>
+        ),
+    },
   {
     path:'/admin/',
     element: (
@@ -68,6 +88,22 @@ export const routesSection: RouteObject[] = [
     ],
   },
   {
+    path: '/login',
+    element: (
+      <AuthLayout>
+        <Login />
+      </AuthLayout>
+    ),
+  },
+    {
+        path: '/register',
+        element: (
+            <AuthLayout>
+                <Register />
+            </AuthLayout>
+        ),
+    },
+    {
     path: 'sign-in',
     element: (
       <AuthLayout>

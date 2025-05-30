@@ -5,7 +5,7 @@ export default function Banner() {
   return (
     <Box
       sx={{
-        backgroundImage: 'url(https://example.com/banner.jpg)', // Thay URL với ảnh thật
+        backgroundImage: 'url(https://images2.thanhnien.vn/zoom/622_389/Uploaded/tuyenth/2019_04_24/avengers-endgame-poster-top-half_YIGO.jpg)', // Thay URL với ảnh thật
         height: '400px',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
