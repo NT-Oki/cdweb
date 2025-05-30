@@ -49,11 +49,11 @@ const renderFallback = () => (
 export const routesSection: RouteObject[] = [
    {
     path: '/',
-    element: (
-      <Suspense fallback={renderFallback()}>
-        <Hello />
-      </Suspense>
-    ),
+       element: (
+           <Suspense fallback={renderFallback()}>
+               <MovieList />
+           </Suspense>
+       ),
   },
     {
         path: '/movie',
