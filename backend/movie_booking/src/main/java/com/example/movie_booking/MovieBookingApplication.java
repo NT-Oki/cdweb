@@ -2,12 +2,16 @@ package com.example.movie_booking;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+
+import javax.naming.Context;
 
 @SpringBootApplication
 public class MovieBookingApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MovieBookingApplication.class, args);
+		ApplicationContext context= SpringApplication.run(MovieBookingApplication.class, args);
+
 	}
 
 }
