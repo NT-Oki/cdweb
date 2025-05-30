@@ -9,16 +9,38 @@ import {
   IconButton
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import API_URLS from '../config/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
 
-  const handleLogin = () => {
-    // Bạn có thể thêm logic gọi API ở đây
-    console.log('Email:', email);
-    console.log('Password:', password);
+  const handleLogin = async () => {
+    try {
+      const response = await fetch(API_URLS.AUTH.login, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Đăng nhập thất bại
+        alert(data.message || "Đăng nhập thất bại");
+      } else {
+        // Đăng nhập thành công
+        localStorage.setItem("token", data.token);
+        alert("Đăng nhập thành công!");
+        // Điều hướng sang trang khác nếu cần
+        window.location.href = "/"; // hoặc dùng useNavigate nếu bạn dùng React Router
+      }
+    } catch (error) {
+      alert("Đã xảy ra lỗi kết nối: " + error.message);
+    }
   };
 
   return (

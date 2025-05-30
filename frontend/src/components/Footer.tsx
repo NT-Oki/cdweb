@@ -4,13 +4,13 @@ import { Box, Typography, Link } from '@mui/material';
 export default function Footer() {
   return (
     <Box component="footer" sx={{
-      position: 'fixed', // Đặt footer cố định
+     // position: 'fixed', // Đặt footer cố định
       bottom: 0,         // Đảm bảo footer luôn ở dưới cùng
       left: 0,           // Căn chỉnh footer từ bên trái
       width: '100%',     // Chiếm toàn bộ chiều rộng màn hình
       backgroundColor: '#111', 
       color: 'white', 
-      padding: '20px', 
+      padding: '20px',
       textAlign: 'center',
     }}>
       <Typography variant="body2" sx={{ mb: 1 }}>
