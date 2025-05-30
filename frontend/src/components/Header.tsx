@@ -48,7 +48,7 @@ export default function Header() {
         </Box>
 
         {/* Tài khoản */}
-        <IconButton color="inherit" component={Link} to="/login"> {/* 👉 Link tới trang đăng nhập */}
+        <IconButton color="inherit" component={Link} to="/admin/dashboard"> {/* 👉 Link tới trang đăng nhập */}
           <AccountCircle />
         </IconButton>
       </Toolbar>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -24,49 +24,67 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import axios from 'axios';
+import API_URLS from '../../../config/api';
 
-interface Showtime {
-  id: string;
-  movie: string;
-  room: string;
-  startTime: string; // ISO string or display string
-  price: number;
-  status: 'Active' | 'Inactive';
+interface StatusFilm {
+  id: number;
+  name: string;
 }
 
-const sampleShowtimes: Showtime[] = [
-  {
-    id: 'SC001',
-    movie: 'Avengers: Endgame',
-    room: 'Room 1',
-    startTime: '2025-06-30 18:00',
-    price: 100000,
-    status: 'Active',
-  },
-  {
-    id: 'SC002',
-    movie: 'Spider-Man: No Way Home',
-    room: 'Room 2',
-    startTime: '2025-06-30 20:00',
-    price: 90000,
-    status: 'Active',
-  },
-];
+interface Movie {
+  id: number;
+  nameMovie: string;
+  releaseDate: string;
+  durationMovie: string;
+  actor: string;
+  director: string;
+  studio: string;
+  content: string;
+  trailer: string;
+  avatar: string;
+  statusFilmId: StatusFilm;
+}
+
+interface Room {
+  id: number;
+  roomName: string;
+  quantitySeat: number;
+  status: string;
+  description: string;
+}
+
+interface Showtime {
+  id: number;
+  movie: Movie;
+  room: Room;
+  showDate: string;
+  startTime: string; // ISO date-time string
+}
 
 export default function ShowTimeAdmin() {
-  const [showtimes, setShowtimes] = useState<Showtime[]>(sampleShowtimes);
+  const token =localStorage.getItem("token");
+  const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [searchText, setSearchText] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [editingShowtime, setEditingShowtime] = useState<Showtime | null>(null);
+   const fetchShowtime = async () => {
+  try {
+    const response = await axios.get(API_URLS.ADMIN.showtime.list_showtime, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    setShowtimes(response.data)
+  } catch (err: any) {
+    console.log("lỗi lấy danh sách room" + err.response.data);
+  }
+};
 
-  // Filter showtimes by search text (movie name or room)
-  const filteredShowtimes = showtimes.filter(
-    (sc) =>
-      sc.movie.toLowerCase().includes(searchText.toLowerCase()) ||
-      sc.room.toLowerCase().includes(searchText.toLowerCase())
-  );
+useEffect(() => {
+  fetchShowtime();
+}, []);
 
-  // Open dialog to add or edit
   const handleOpenDialog = (showtime?: Showtime) => {
     setEditingShowtime(showtime || null);
     setOpenDialog(true);
@@ -76,26 +94,28 @@ export default function ShowTimeAdmin() {
     setOpenDialog(false);
   };
 
-  // Save new or edited showtime
   const handleSaveShowtime = (newShowtime: Showtime) => {
     setShowtimes((prev) => {
       const exists = prev.find((sc) => sc.id === newShowtime.id);
       if (exists) {
-        // Edit existing
         return prev.map((sc) => (sc.id === newShowtime.id ? newShowtime : sc));
       }
-      // Add new
       return [...prev, newShowtime];
     });
     setOpenDialog(false);
   };
 
-  // Delete showtime
-  const handleDeleteShowtime = (id: string) => {
+  const handleDeleteShowtime = (id: number) => {
     if (window.confirm('Bạn có chắc muốn xóa suất chiếu này?')) {
       setShowtimes((prev) => prev.filter((sc) => sc.id !== id));
     }
   };
+
+  const filteredShowtimes = showtimes.filter(
+    (sc) =>
+      sc.movie.nameMovie.toLowerCase().includes(searchText.toLowerCase()) ||
+      sc.room.roomName.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   return (
     <Box sx={{ p: 3 }}>
@@ -120,12 +140,20 @@ export default function ShowTimeAdmin() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Mã suất chiếu</TableCell>
-              <TableCell>Phim</TableCell>
+              <TableCell
+              sx={{
+                maxWidth:"80px"
+              }}
+              >Mã suất chiếu</TableCell>
+              <TableCell 
+              sx={{
+                maxWidth:"150px"
+              }}
+              >Phim</TableCell>
               <TableCell>Phòng chiếu</TableCell>
-              <TableCell>Thời gian bắt đầu</TableCell>
-              <TableCell>Giá vé (VNĐ)</TableCell>
               <TableCell>Trạng thái</TableCell>
+              <TableCell>Thời gian bắt đầu</TableCell>
+              {/* <TableCell>Giá vé (VNĐ)</TableCell> */}
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
@@ -134,11 +162,32 @@ export default function ShowTimeAdmin() {
               filteredShowtimes.map((sc) => (
                 <TableRow key={sc.id}>
                   <TableCell>{sc.id}</TableCell>
-                  <TableCell>{sc.movie}</TableCell>
-                  <TableCell>{sc.room}</TableCell>
+                  <TableCell
+                   sx={{
+                maxWidth:"150px"
+              }}
+                  >{sc.movie.nameMovie}</TableCell>
+                  <TableCell>{sc.room.roomName}</TableCell>
+                 <TableCell
+  sx={{
+    color:
+      sc.movie.statusFilmId.id === 1
+        ? 'green'
+        : sc.movie.statusFilmId.id === 2
+        ? 'blue'
+        : 'coral',
+        fontWeight:"bold"
+ 
+  }}
+>
+  {sc.movie.statusFilmId.id === 1
+    ? 'Đang chiếu'
+    : sc.movie.statusFilmId.id === 2
+    ? 'Sắp chiếu'
+    : 'Ngừng chiếu'}
+</TableCell>
+
                   <TableCell>{sc.startTime}</TableCell>
-                  <TableCell>{sc.price.toLocaleString()}</TableCell>
-                  <TableCell>{sc.status}</TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleOpenDialog(sc)} color="primary" size="small">
                       <EditIcon />
@@ -164,7 +213,6 @@ export default function ShowTimeAdmin() {
         </Table>
       </TableContainer>
 
-      {/* Dialog thêm/sửa suất chiếu */}
       {openDialog && (
         <ShowtimeDialog
           open={openDialog}
@@ -177,7 +225,6 @@ export default function ShowTimeAdmin() {
   );
 }
 
-// Component dialog thêm/sửa suất chiếu
 interface ShowtimeDialogProps {
   open: boolean;
   onClose: () => void;
@@ -186,21 +233,42 @@ interface ShowtimeDialogProps {
 }
 
 function ShowtimeDialog({ open, onClose, showtime, onSave }: ShowtimeDialogProps) {
-  const [id, setId] = useState(showtime?.id || '');
-  const [movie, setMovie] = useState(showtime?.movie || '');
-  const [room, setRoom] = useState(showtime?.room || '');
-  const [startTime, setStartTime] = useState(showtime?.startTime || '');
-  const [price, setPrice] = useState(showtime?.price || 0);
-  const [status, setStatus] = useState<Showtime['status']>(showtime?.status || 'Active');
-
   const isEdit = Boolean(showtime);
+  const [id, setId] = useState<number>(showtime?.id || Date.now());
+  const [movieName, setMovieName] = useState<string>(showtime?.movie.nameMovie || '');
+  const [roomName, setRoomName] = useState<string>(showtime?.room.roomName || '');
+  const [startTime, setStartTime] = useState<string>(showtime?.startTime || '');
+    const [status, setStatus] = useState<number>(showtime?.movie.statusFilmId.id || 0);
 
   const handleSubmit = () => {
-    if (!id || !movie || !room || !startTime || price <= 0) {
+    if (!movieName || !roomName || !startTime ) {
       alert('Vui lòng điền đầy đủ thông tin hợp lệ');
       return;
     }
-    onSave({ id, movie, room, startTime, price, status });
+
+    const movie: Movie = {
+      id: Date.now(),
+      nameMovie: movieName,
+      releaseDate: '',
+      durationMovie: '',
+      actor: '',
+      director: '',
+      studio: '',
+      content: '',
+      trailer: '',
+      avatar: '',
+      statusFilmId: { id: 1, name: 'Hiển thị' },
+    };
+
+    const room: Room = {
+      id: Date.now(),
+      roomName,
+      quantitySeat: 100,
+      status: 'Ready',
+      description: '',
+    };
+
+    onSave({ id, movie, room, showDate: '', startTime });
   };
 
   return (
@@ -209,13 +277,15 @@ function ShowtimeDialog({ open, onClose, showtime, onSave }: ShowtimeDialogProps
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
-            label="Mã suất chiếu"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
-            disabled={isEdit}
+            label="Tên phim"
+            value={movieName}
+            onChange={(e) => setMovieName(e.target.value)}
           />
-          <TextField label="Phim" value={movie} onChange={(e) => setMovie(e.target.value)} />
-          <TextField label="Phòng chiếu" value={room} onChange={(e) => setRoom(e.target.value)} />
+          <TextField
+            label="Phòng chiếu"
+            value={roomName}
+            onChange={(e) => setRoomName(e.target.value)}
+          />
           <TextField
             label="Thời gian bắt đầu"
             type="datetime-local"
@@ -223,19 +293,20 @@ function ShowtimeDialog({ open, onClose, showtime, onSave }: ShowtimeDialogProps
             onChange={(e) => setStartTime(e.target.value)}
             InputLabelProps={{ shrink: true }}
           />
-          <TextField
+          {/* <TextField
             label="Giá vé (VNĐ)"
             type="number"
             value={price}
             onChange={(e) => setPrice(Number(e.target.value))}
-          />
+          />*/}
           <FormControl>
             <InputLabel>Trạng thái</InputLabel>
             <Select value={status} label="Trạng thái" onChange={(e) => setStatus(e.target.value)}>
-              <MenuItem value="Active">Hoạt động</MenuItem>
-              <MenuItem value="Inactive">Không hoạt động</MenuItem>
+              <MenuItem value="1">Đang chiếu</MenuItem>
+              <MenuItem value="2">Sắp chiếu</MenuItem>
+              <MenuItem value="3">Ngừng chiếu</MenuItem>
             </Select>
-          </FormControl>
+          </FormControl> 
         </Stack>
       </DialogContent>
       <DialogActions>

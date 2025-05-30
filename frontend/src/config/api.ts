@@ -5,6 +5,8 @@ const MOVIE_URL = `${BASE_URL}/movies`;
 const LOGIN_URL=`${BASE_URL}/login`;
 const REGISTER_URL = `${BASE_URL}/register`;
 const ADMIN_ROOMS_URL = `${ADMIN_URL}/rooms`;
+const ADMIN_SHOWTIMES_URL = `${ADMIN_URL}/showtimes`;
+const ADMIN_MOVIES_URL = `${ADMIN_URL}/movies`;
 const ADMIN_USER_URL = `${BASE_URL}/admin/users`;
 
 const API_URLS = {
@@ -25,6 +27,13 @@ const API_URLS = {
       delete: (id:number)=>`${ADMIN_ROOMS_URL}/status/${id}`,
       update: (id:number)=>`${ADMIN_ROOMS_URL}/${id}`,
       save: `${ADMIN_ROOMS_URL}/add`,
+    },
+    showtime:{
+      list_showtime:`${ADMIN_SHOWTIMES_URL}/`
+    },
+    movie:{
+      list_movie:`${ADMIN_MOVIES_URL}/list`,
+      add:`${ADMIN_MOVIES_URL}/add`,
     }
   },
   ADMIN_USER: {
