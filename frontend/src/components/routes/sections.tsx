@@ -29,6 +29,8 @@ export const Hello = lazy(() => import('../Hello'));
 export const SeatSelector = lazy(() => import('../SeatSelector'));
 export const Checkout =lazy(()=> import(`../Checkout`));
 export const Ticket =lazy(()=> import(`../Ticket`));
+export const ShowTimeAdmin =lazy(()=> import(`../admin/pages/ShowTimeAdmin`));
+export const RoomAdmin =lazy(()=> import(`../admin/pages/RoomAdmin`));
 
 const renderFallback = () => (
   <Box
@@ -88,7 +90,8 @@ export const routesSection: RouteObject[] = [
       { path: 'dashboard', element: <DashboardPage /> },
       { path: 'user', element: <UserPage /> },
       { path: 'products', element: <ProductsPage /> },
-      { path: 'blog', element: <BlogPage /> },
+      { path: 'showtime', element: <ShowTimeAdmin /> },
+      { path: 'room', element: <RoomAdmin /> },
     ],
   },
   {
