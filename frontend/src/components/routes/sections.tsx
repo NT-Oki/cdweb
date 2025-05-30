@@ -13,7 +13,7 @@ import Login from '../Login';
 import Register from '../Register';
 import MovieList from '../MovieList';
 import MovieDetail from '../MovieDetail';
-import ShowtimeSchedule from '../ShowtimeSchedule';
+// import ShowtimeSchedule from '../ShowtimeSchedule';
 // import SeatSelector from '../SeatSelector';
 // import Home from '../Home';
 
@@ -86,8 +86,8 @@ export const routesSection: RouteObject[] = [
     ),
     children: [
       { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'user', element: <UserPage /> },
-      { path: 'products', element: <ProductsPage /> },
+      { path: 'users', element: <UserPage /> },
+      { path: 'movies', element: <ProductsPage /> },
       { path: 'blog', element: <BlogPage /> },
     ],
   },
