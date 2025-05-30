@@ -1,48 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, CardMedia, Chip, Rating } from '@mui/material';
-import Grid from '@mui/material/Grid';
-
 import { useParams } from 'react-router-dom';
-
-const movies = [
-    {
-        id: '1',
-        title: 'Phim 1',
-        description: 'Một bộ phim hành động kịch tính với những pha rượt đuổi nghẹt thở.',
-        image: 'https://example.com/movie1.jpg',
-        trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-        cast: ['Diễn viên A', 'Diễn viên B', 'Diễn viên C'],
-        rating: 4.5,
-    },
-    {
-        id: '2',
-        title: 'Phim 2',
-        description: 'Một câu chuyện tình yêu cảm động giữa hai con người xa lạ.',
-        image: 'https://example.com/movie2.jpg',
-        trailer: 'https://www.youtube.com/embed/kXYiU_JCYtU',
-        cast: ['Diễn viên D', 'Diễn viên E'],
-        rating: 4.0,
-    },
-];
+import axios from 'axios';
 
 const MovieDetail = () => {
     const { id } = useParams();
-    const movie = movies.find((movie) => movie.id === id);
+    const [movie, setMovie] = useState(null);
+
+    useEffect(() => {
+        axios.get(`http://localhost:8080/movies/detail/${id}`)
+            .then(res => setMovie(res.data))
+            .catch(err => console.error("Lỗi khi tải chi tiết phim:", err));
+    }, [id]);
 
     if (!movie) {
         return <Typography variant="h6" sx={{ padding: 4 }}>Không tìm thấy phim</Typography>;
     }
 
+    const castList = movie.actor ? movie.actor.split(',') : [];
+
     return (
         <Box sx={{ padding: 4 }}>
-            <Typography variant="h3" fontWeight="bold">{movie.title}</Typography>
+            <Typography variant="h3" fontWeight="bold">{movie.nameMovie}</Typography>
 
             {/* Hình ảnh phim */}
             <CardMedia
                 component="img"
                 height="450"
-                image={movie.image}
-                alt={movie.title}
+                image={movie.avatar}
+                alt={movie.nameMovie}
                 sx={{ my: 3, borderRadius: 2 }}
             />
 
@@ -61,21 +47,23 @@ const MovieDetail = () => {
 
             {/* Mô tả */}
             <Typography variant="h6" fontWeight="medium" gutterBottom>Mô tả</Typography>
-            <Typography>{movie.description}</Typography>
+            <Typography>{movie.content}</Typography>
 
             {/* Dàn diễn viên */}
             <Typography variant="h6" fontWeight="medium" sx={{ mt: 4 }}>Diễn viên</Typography>
-            {movie.cast.map((actor, idx) => (
-  <Box key={idx} sx={{ display: 'inline-block', m: 0.5 }}>
-    <Chip label={actor} color="primary" />
-  </Box>
-))}
+            {castList.map((actor, idx) => (
+                <Box key={idx} sx={{ display: 'inline-block', m: 0.5 }}>
+                    <Chip label={actor.trim()} color="primary" />
+                </Box>
+            ))}
 
+            {/* Đạo diễn */}
+            <Typography variant="h6" fontWeight="medium" sx={{ mt: 4 }}>Đạo diễn</Typography>
+            <Typography>{movie.director}</Typography>
 
-
-            {/* Đánh giá */}
-            <Typography variant="h6" fontWeight="medium" sx={{ mt: 4 }}>Đánh giá</Typography>
-            <Rating value={movie.rating} precision={0.5} readOnly />
+            {/* Thời lượng */}
+            <Typography variant="h6" fontWeight="medium" sx={{ mt: 2 }}>Thời lượng</Typography>
+            <Typography>{movie.durationMovie}</Typography>
 
             {/* Nút đặt vé */}
             <Box sx={{ mt: 4 }}>
