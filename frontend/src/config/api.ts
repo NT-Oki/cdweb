@@ -1,9 +1,11 @@
+// src/config/api.ts
 const BASE_URL = "http://localhost:8080";
 const BOOKING_URL = `${BASE_URL}/booking`;
 const ADMIN_URL = `${BASE_URL}/admin`;
 const MOVIE_URL = `${BASE_URL}/movies`;
 const LOGIN_URL = `${BASE_URL}/login`;
 const REGISTER_URL = `${BASE_URL}/register`;
+const LOGOUT_URL = `${BASE_URL}/logout`; // Thêm endpoint logout
 const ADMIN_ROOMS_URL = `${ADMIN_URL}/rooms`;
 const ADMIN_SHOWTIMES_URL = `${ADMIN_URL}/showtimes`;
 const ADMIN_MOVIES_URL = `${ADMIN_URL}/movies`;
@@ -20,6 +22,7 @@ const API_URLS = {
   AUTH: {
     login: LOGIN_URL,
     register: REGISTER_URL,
+    logout: LOGOUT_URL, // Thêm vào AUTH
   },
   ADMIN: {
     room: {

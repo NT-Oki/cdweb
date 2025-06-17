@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// src/components/Login.tsx
+import React, { useState } from 'react';
 import {
   Box,
   TextField,
@@ -9,63 +10,44 @@ import {
   IconButton,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import API_URLS from '../config/api';
-import { useAuth } from '../contexts/useAuth';
+import API_URLS, { apiRequest } from '../config/api';
+import { useAuth } from '../contexts/AuthContext';
 
-// Validation schema đồng bộ với LoginDto
 const validationSchema = Yup.object({
   email: Yup.string()
       .email('Email không hợp lệ')
       .required('Email không được để trống'),
   password: Yup.string()
       .required('Mật khẩu không được để trống')
-      .min(8, 'Mật khẩu phải có ít nhất 8 ký tự'), // Thêm yêu cầu 8 ký tự
+      .min(8, 'Mật khẩu phải có ít nhất 8 ký tự'),
 });
 
 const Login = () => {
-  const { login, user } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [showPass, setShowPass] = useState(false);
+  const [serverErrors, setServerErrors] = useState<{ [key: string]: string }>({});
 
   const handleLogin = async (values: { email: string; password: string }) => {
     try {
-      const response = await fetch(API_URLS.AUTH.login, {
+      setServerErrors({});
+      const data = await apiRequest(API_URLS.AUTH.login, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(values),
       });
-
-      // Kiểm tra content-type của response
-      const contentType = response.headers.get('content-type');
-      let data;
-
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        // Response không phải JSON
-        const text = await response.text();
-        throw new Error(`Response không phải JSON: ${text}`);
-      }
-
-      if (!response.ok) {
-        alert(data.message || 'Đăng nhập thất bại');
-        return;
-      }
 
       const rawRole = data.role;
       const mappedRole = rawRole === 'ROLE_ADMIN' ? 'admin' : 'user';
 
       console.log('API response:', data);
-      console.log('User trước khi login:', { name: data.name, role: mappedRole });
+      console.log('User trước khi login:', { email: data.email, name: data.name, role: mappedRole });
 
       login(
           {
+            email: data.email,
             name: data.name || 'User',
             role: mappedRole,
           },
@@ -74,19 +56,12 @@ const Login = () => {
 
       alert('Đăng nhập thành công!');
       console.log('Chuyển hướng sau đăng nhập:', mappedRole === 'admin' ? '/admin/dashboard' : '/');
-      navigate(mappedRole === 'admin' ? '/admin/dashboard' : '/');
+      navigate(mappedRole === 'admin' ? '/admin/dashboard' : '/', { replace: true });
     } catch (error: any) {
       console.error('Lỗi khi gọi API login:', error);
-      alert(`Đã xảy ra lỗi: ${error.message || 'Kết nối thất bại'}`);
+      setServerErrors({ message: error.message || 'Đăng nhập thất bại' });
     }
   };
-
-  useEffect(() => {
-    if (user && location.pathname !== '/login') {
-      console.log('User sau khi login:', user);
-      navigate(user.role === 'admin' ? '/admin/dashboard' : '/');
-    }
-  }, [user, navigate, location]);
 
   return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
@@ -94,6 +69,12 @@ const Login = () => {
           <Typography variant="h5" fontWeight="bold" gutterBottom>
             Đăng nhập tài khoản
           </Typography>
+
+          {serverErrors.message && (
+              <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+                {serverErrors.message}
+              </Typography>
+          )}
 
           <Formik
               initialValues={{ email: '', password: '' }}
@@ -109,10 +90,9 @@ const Login = () => {
                       variant="outlined"
                       fullWidth
                       margin="normal"
-                      error={touched.email && !!errors.email}
-                      helperText={touched.email && errors.email}
+                      error={(touched.email && !!errors.email) || !!serverErrors.message}
+                      helperText={(touched.email && errors.email) || serverErrors.message}
                   />
-
                   <Field
                       as={TextField}
                       name="password"
@@ -121,8 +101,8 @@ const Login = () => {
                       fullWidth
                       margin="normal"
                       type={showPass ? 'text' : 'password'}
-                      error={touched.password && !!errors.password}
-                      helperText={touched.password && errors.password}
+                      error={(touched.password && !!errors.password) || !!serverErrors.message}
+                      helperText={(touched.password && errors.password) || serverErrors.message}
                       InputProps={{
                         endAdornment: (
                             <InputAdornment position="end">
@@ -133,7 +113,6 @@ const Login = () => {
                         ),
                       }}
                   />
-
                   <Button
                       type="submit"
                       variant="contained"
