@@ -84,7 +84,7 @@ export default function MovieManagement() {
         m.nameMovie.toLowerCase().includes(search.toLowerCase())
     );
 
-    const getStatusText = (id:number) => {
+    const getStatusText = (id: number) => {
         switch (id) {
             case 1:
                 return 'Đang chiếu';
@@ -95,7 +95,7 @@ export default function MovieManagement() {
         }
     };
 
-    const getStatusColor = (id:number) => {
+    const getStatusColor = (id: number) => {
         switch (id) {
             case 1:
                 return '#4caf50'; // green
@@ -123,37 +123,37 @@ export default function MovieManagement() {
                     <TableHead>
                         <TableRow>
                             <TableCell
-                            
-                               sx={{
-                                maxWidth:"150px"
-                            }}>Tên phim</TableCell>
+
+                                sx={{
+                                    maxWidth: "150px"
+                                }}>Tên phim</TableCell>
                             <TableCell>Ngày chiếu</TableCell>
                             <TableCell>Thời lượng</TableCell>
                             <TableCell>Đạo diễn</TableCell>
                             <TableCell
-                            sx={{
-                                maxWidth:"200px"
-                            }}
+                                sx={{
+                                    maxWidth: "200px"
+                                }}
                             >Diễn viên</TableCell>
                             <TableCell>Trạng thái</TableCell>
                             <TableCell>Hành động</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredMovies.map((movie,index) => (
+                        {filteredMovies.map((movie, index) => (
                             <TableRow key={movie.id}>
                                 <TableCell
-                                 sx={{
-                                maxWidth:"150px"
-                            }}
+                                    sx={{
+                                        maxWidth: "150px"
+                                    }}
                                 >{movie.nameMovie}</TableCell>
                                 <TableCell>{movie.releaseDate}</TableCell>
                                 <TableCell>{movie.durationMovie} phút</TableCell>
                                 <TableCell>{movie.director}</TableCell>
                                 <TableCell
-                                 sx={{
-                                maxWidth:"200px"
-                            }}
+                                    sx={{
+                                        maxWidth: "200px"
+                                    }}
                                 >{movie.actor}</TableCell>
                                 <TableCell
                                     sx={{
@@ -164,16 +164,16 @@ export default function MovieManagement() {
                                     {getStatusText(movie.statusFilmId.id)}
                                 </TableCell>
                                 <TableCell>
-                                     <IconButton onClick={() => handleEdit(movie)} color="primary" size="small">
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      onClick={() => handleEdit(movie)}
-                      color="error"
-                      size="small"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                                    <IconButton onClick={() => handleEdit(movie)} color="primary" size="small">
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        onClick={() => handleEdit(movie)}
+                                        color="error"
+                                        size="small"
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
                                 </TableCell>
                             </TableRow>
                         ))}

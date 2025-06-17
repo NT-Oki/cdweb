@@ -27,4 +27,5 @@ public class Movie {
     @ManyToOne
     @JoinColumn(name = "status_movie_id")
     private StatusFilm statusFilmId;
+
 }

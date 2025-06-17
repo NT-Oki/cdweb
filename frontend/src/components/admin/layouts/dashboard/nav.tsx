@@ -15,7 +15,6 @@ import { RouterLink } from '../../../routes/components';
 import { Logo } from '../../components/logo';
 import { Scrollbar } from '../../components/scrollbar';
 
-import { NavUpgrade } from '../components/nav-upgrade';
 import { WorkspacesPopover } from '../components/workspaces-popover';
 
 import type { NavItem } from '../nav-config-dashboard';
