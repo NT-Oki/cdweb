@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useNavigate } from 'react-router-dom';
 
 import { DashboardContent } from '../../../layouts/dashboard';
 import { Iconify } from '../../../components/iconify';
@@ -16,33 +17,37 @@ import { UserTableHead } from '../user-table-head';
 import { TableEmptyRows } from '../table-empty-rows';
 import { UserTableToolbar } from '../user-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
-
+import { useAuth } from '../../../../../contexts/useAuth';
+import API_URLS, { apiRequest } from '../../../../../config/api';
 import type { UserProps } from '../user-table-row';
-import axios from 'axios';
-import API_URLS from '../../../../../config/api';
 
 // ----------------------------------------------------------------------
 
 export function UserView() {
   const table = useTable();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<UserProps[]>([]);
   const [filterName, setFilterName] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
-  const fetchUsers = () => {
-    const token = localStorage.getItem('token');
-    axios
-        .get(API_URLS.ADMIN_USER.list, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => {
-          setUsers(res.data);
-        })
-        .catch((err) => {
-          console.error('Failed to fetch users:', err);
-        });
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const data = await apiRequest(
+          API_URLS.ADMIN_USER.list,
+          { method: 'GET' },
+          logout,
+          navigate
+      );
+      setUsers(data);
+    } catch (error: any) {
+      console.error('Failed to fetch users:', error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -80,23 +85,26 @@ export function UserView() {
       gender: Yup.string().required('Bắt buộc'),
       role: Yup.string().required('Bắt buộc'),
     }),
-    onSubmit: (values) => {
-      const token = localStorage.getItem('token');
-      setLoading(true);
-      axios
-          .post(API_URLS.ADMIN_USER.add, values, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          .then(() => {
-            fetchUsers();
-            handleCloseDialog();
-          })
-          .catch((err) => {
-            console.error('Create user failed:', err);
-          })
-          .finally(() => {
-            setLoading(false);
-          });
+    onSubmit: async (values) => {
+      try {
+        setLoading(true);
+        await apiRequest(
+            API_URLS.ADMIN_USER.add,
+            {
+              method: 'POST',
+              body: JSON.stringify(values),
+            },
+            logout,
+            navigate
+        );
+        await fetchUsers();
+        handleCloseDialog();
+      } catch (error: any) {
+        console.error('Create user failed:', error.message);
+        alert('Lỗi khi tạo người dùng: ' + error.message);
+      } finally {
+        setLoading(false);
+      }
     },
   });
 
@@ -108,26 +116,28 @@ export function UserView() {
 
   const notFound = !dataFiltered.length && !!filterName;
 
-  const handleDeleteSelected = () => {
-    const token = localStorage.getItem('token');
+  const handleDeleteSelected = async () => {
     if (table.selected.length === 0) return;
 
-    setLoading(true);
-    axios
-        .delete(API_URLS.ADMIN_USER.deleteMultiple, {
-          headers: { Authorization: `Bearer ${token}` },
-          data: table.selected ,  // Gửi danh sách id cần xóa trong body
-        })
-        .then(() => {
-          fetchUsers();
-          table.onSelectAllRows(false, []); // bỏ chọn tất cả sau khi xóa
-        })
-        .catch((err) => {
-          console.error('Delete users failed:', err);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+    try {
+      setLoading(true);
+      await apiRequest(
+          API_URLS.ADMIN_USER.deleteMultiple,
+          {
+            method: 'DELETE',
+            body: JSON.stringify(table.selected),
+          },
+          logout,
+          navigate
+      );
+      await fetchUsers();
+      table.onSelectAllRows(false, []);
+    } catch (error: any) {
+      console.error('Delete users failed:', error.message);
+      alert('Lỗi khi xóa người dùng: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -136,7 +146,12 @@ export function UserView() {
           <Typography variant="h4" sx={{ flexGrow: 1 }}>
             Users
           </Typography>
-          <Button variant="contained" color="inherit" startIcon={<Iconify icon="mingcute:add-line" />} onClick={handleOpenDialog}>
+          <Button
+              variant="contained"
+              color="inherit"
+              startIcon={<Iconify icon="mingcute:add-line" />}
+              onClick={handleOpenDialog}
+          >
             New user
           </Button>
         </Box>
@@ -210,8 +225,22 @@ export function UserView() {
           <DialogTitle>Thêm người dùng</DialogTitle>
           <form onSubmit={formik.handleSubmit}>
             <DialogContent>
-              <TextField fullWidth margin="normal" label="Họ tên" {...formik.getFieldProps('name')} error={formik.touched.name && !!formik.errors.name} helperText={formik.touched.name && formik.errors.name} />
-              <TextField fullWidth margin="normal" label="Email" {...formik.getFieldProps('email')} error={formik.touched.email && !!formik.errors.email} helperText={formik.touched.email && formik.errors.email} />
+              <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Họ tên"
+                  {...formik.getFieldProps('name')}
+                  error={formik.touched.name && !!formik.errors.name}
+                  helperText={formik.touched.name && formik.errors.name}
+              />
+              <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Email"
+                  {...formik.getFieldProps('email')}
+                  error={formik.touched.email && !!formik.errors.email}
+                  helperText={formik.touched.email && formik.errors.email}
+              />
               <TextField
                   fullWidth
                   margin="normal"
@@ -230,9 +259,22 @@ export function UserView() {
                   error={formik.touched.confirmPassword && !!formik.errors.confirmPassword}
                   helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
               />
-              {/*<TextField fullWidth margin="normal" label="Email" {...formik.getFieldProps('email')} error={formik.touched.email && !!formik.errors.email} helperText={formik.touched.email && formik.errors.email} />*/}
-              <TextField fullWidth margin="normal" label="Số điện thoại" {...formik.getFieldProps('phoneNumber')} error={formik.touched.phoneNumber && !!formik.errors.phoneNumber} helperText={formik.touched.phoneNumber && formik.errors.phoneNumber} />
-              <TextField fullWidth margin="normal" label="Địa chỉ" {...formik.getFieldProps('address')} error={formik.touched.address && !!formik.errors.address} helperText={formik.touched.address && formik.errors.address} />
+              <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Số điện thoại"
+                  {...formik.getFieldProps('phoneNumber')}
+                  error={formik.touched.phoneNumber && !!formik.errors.phoneNumber}
+                  helperText={formik.touched.phoneNumber && formik.errors.phoneNumber}
+              />
+              <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Địa chỉ"
+                  {...formik.getFieldProps('address')}
+                  error={formik.touched.address && !!formik.errors.address}
+                  helperText={formik.touched.address && formik.errors.address}
+              />
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, paddingLeft: 1 }}>
                 <Typography sx={{ mr: 2, paddingBottom: 1 }}>Giới tính:</Typography>
                 <label style={{ marginLeft: '60px' }}>
@@ -240,7 +282,7 @@ export function UserView() {
                       type="radio"
                       name="gender"
                       value="false"
-                      // checked={formik.values.gender === 'false'}
+                      checked={formik.values.gender === 'false'}
                       onChange={formik.handleChange}
                   />
                   Nữ
@@ -250,7 +292,7 @@ export function UserView() {
                       type="radio"
                       name="gender"
                       value="true"
-                      // checked={formik.values.gender === 'true'}
+                      checked={formik.values.gender === 'true'}
                       onChange={formik.handleChange}
                   />
                   Nam
@@ -284,6 +326,8 @@ export function UserView() {
             </DialogActions>
           </form>
         </Dialog>
+
+        {/* Dialog xác nhận xóa */}
         <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
           <DialogTitle>Xác nhận xóa</DialogTitle>
           <DialogContent>

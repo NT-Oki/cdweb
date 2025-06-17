@@ -5,6 +5,7 @@ import { Outlet, RouterProvider, createBrowserRouter } from 'react-router';
 import App from './App';
 import { routesSection } from './components/routes/sections';
 import { ErrorBoundary } from './components/routes/components';
+import { AuthProvider } from './contexts/AuthContext';
 
 // ----------------------------------------------------------------------
 
@@ -24,6 +25,8 @@ const root = createRoot(document.getElementById('root')!);
 
 root.render(
   <StrictMode>
-    <RouterProvider router={router} />
+      <AuthProvider>
+          <RouterProvider router={router} />
+      </AuthProvider>
   </StrictMode>
 );

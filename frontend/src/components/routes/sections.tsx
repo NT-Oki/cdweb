@@ -11,8 +11,10 @@ import { AuthLayout } from '../admin/layouts/auth';
 import { DashboardLayout } from '../admin/layouts/dashboard';
 import Login from '../Login';
 import Register from '../Register';
+import Home from '../Home';
 import MovieList from '../MovieList';
 import MovieDetail from '../MovieDetail';
+import AdminRoute from './AdminRoute';
 // import ShowtimeSchedule from '../ShowtimeSchedule';
 // import SeatSelector from '../SeatSelector';
 // import Home from '../Home';
@@ -33,34 +35,34 @@ export const ShowTimeAdmin =lazy(()=> import(`../admin/pages/ShowTimeAdmin`));
 export const RoomAdmin =lazy(()=> import(`../admin/pages/RoomAdmin`));
 
 const renderFallback = () => (
-  <Box
-    sx={{
-      display: 'flex',
-      flex: '1 1 auto',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    <LinearProgress
-      sx={{
-        width: 1,
-        maxWidth: 320,
-        bgcolor: (theme) => varAlpha(theme.vars.palette.text.primaryChannel, 0.16),
-        [`& .${linearProgressClasses.bar}`]: { bgcolor: 'text.primary' },
-      }}
-    />
-  </Box>
+    <Box
+        sx={{
+            display: 'flex',
+            flex: '1 1 auto',
+            alignItems: 'center',
+            justifyContent: 'center',
+        }}
+    >
+        <LinearProgress
+            sx={{
+                width: 1,
+                maxWidth: 320,
+                bgcolor: (theme) => varAlpha(theme.vars.palette.text.primaryChannel, 0.16),
+                [`& .${linearProgressClasses.bar}`]: { bgcolor: 'text.primary' },
+            }}
+        />
+    </Box>
 );
 
 export const routesSection: RouteObject[] = [
-   {
-    path: '/',
-       element: (
-           <Suspense fallback={renderFallback()}>
-               <MovieList />
-           </Suspense>
-       ),
-  },
+    {
+        path: '/',
+        element: (
+            <Suspense fallback={renderFallback()}>
+                <Home />
+            </Suspense>
+        ),
+    },
     {
         path: '/movie',
         element: (
@@ -77,32 +79,37 @@ export const routesSection: RouteObject[] = [
             </Suspense>
         ),
     },
-  {
-    path:'/admin/',
-    element: (
-      <DashboardLayout>
-        <Suspense fallback={renderFallback()}>
-          <Outlet />
-        </Suspense>
-      </DashboardLayout>
-    ),
-    children: [
-      { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'users', element: <UserPage /> },
-      { path: 'movies', element: <Movie /> },
-      { path: 'showtime', element: <ShowTimeAdmin /> },
-      { path: 'room', element: <RoomAdmin /> },
-
-    ],
-  },
-  {
-    path: '/login',
-    element: (
-      <AuthLayout>
-        <Login />
-      </AuthLayout>
-    ),
-  },
+    {
+        path: '/admin',
+        element: <AdminRoute />,
+        children: [
+            {
+                path: '',
+                element: (
+                    <DashboardLayout>
+                        <Suspense fallback={renderFallback()}>
+                            <Outlet />
+                        </Suspense>
+                    </DashboardLayout>
+                ),
+                children: [
+                    { path: 'dashboard', element: <DashboardPage /> },
+                    { path: 'users', element: <UserPage /> },
+                    { path: 'movies', element: <Movie /> },
+                    { path: 'showtime', element: <ShowTimeAdmin /> },
+                    { path: 'room', element: <RoomAdmin /> },
+                ],
+            },
+        ],
+    },
+    {
+        path: '/login',
+        element: (
+            <AuthLayout>
+                <Login />
+            </AuthLayout>
+        ),
+    },
     {
         path: '/register',
         element: (
@@ -112,46 +119,43 @@ export const routesSection: RouteObject[] = [
         ),
     },
     {
-    path: 'sign-in',
-    element: (
-      <AuthLayout>
-        <SignInPage />
-      </AuthLayout>
-    ),
-  },
-  {
-    path: '404',
-    element: <Page404 />,
-  },
-  { path: '*', element: <Page404 /> },
-  // {
-  //   path:'/booking',
-  //   element: (
-  //     <DashboardLayout>
-  //       <Suspense fallback={renderFallback()}>
-  //         <Outlet />
-  //       </Suspense>
-  //     </DashboardLayout>
-  //   ),
-  //   children: [
-  //     { path: '/showtime', element: <ShowtimeSchedule /> },
-  //     { path: '/chooseseat', element: <UserPage /> },
-
-  //   ],
-  // },
+        path: '/sign-in',
+        element: (
+            <AuthLayout>
+                <SignInPage />
+            </AuthLayout>
+        ),
+    },
     {
-    path: '/book',
-    element: <SeatSelector />,
-  },
+        path: '/book',
+        element: <SeatSelector />,
+    },
     {
-    path: '/checkout',
-    element: <Checkout />,
-  },
-   {
-    path: '/ticket',
-    element: <Ticket />,
-  },
-  
-  
+        path: '/checkout',
+        element: <Checkout />,
+    },
+    {
+        path: '/ticket',
+        element: <Ticket />,
+    },
+    {
+        path: '404',
+        element: <Page404 />,
+    },
+    { path: '*', element: <Page404 /> },
+// {
+//   path:'/booking',
+//   element: (
+//     <DashboardLayout>
+//       <Suspense fallback={renderFallback()}>
+//         <Outlet />
+//       </Suspense>
+//     </DashboardLayout>
+//   ),
+//   children: [
+//     { path: '/showtime', element: <ShowtimeSchedule /> },
+//     { path: '/chooseseat', element: <UserPage /> },
 
+//   ],
+// },
 ];
