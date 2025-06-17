@@ -5,12 +5,11 @@ import { BlogView } from '../sections/blog/view';
 
 // ----------------------------------------------------------------------
 
-export default function Page() {
-  return (
-    <>
-      <title>{`Blog - ${CONFIG.appName}`}</title>
-
-      <BlogView posts={_posts} />
-    </>
-  );
+export default function BlogPage() {
+    return (
+        <>
+            <title>{`Blog - ${CONFIG.appName}`}</title>
+            <BlogView posts={_posts} />
+        </>
+    );
 }

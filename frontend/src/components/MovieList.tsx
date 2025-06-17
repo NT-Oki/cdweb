@@ -36,42 +36,50 @@ export default function MoviesList() {
       .catch(err => console.error("Lỗi khi tải danh sách phim:", err));
   }, []);
 
-  return (
-    <Box> {/* chừa chỗ cho Header fixed và Footer fixed */}
-      <Header />
-      <Toolbar /> {/* Đẩy nội dung xuống dưới Header fixed */}
-      <Banner />
-      {/*<Navbar />*/}
-      <Grid container spacing={4} sx={{ padding: '20px' }}>
-        {movies?.map((movie) => (
-          <Grid item xs={12} sm={6} md={4} key={movie.id}>
-            <Card sx={{ maxWidth: 370, height:"350px" }}>
-              <CardMedia
-                component="img"
-                height="200"
-                image={movie.avatar}
-                alt={movie.nameMovie}
+    return (
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '100vh',
+            }}
+        >
+            <Header />
+            <Toolbar />
+            <Box
+                component="main"
                 sx={{
-                  objectFit: 'contain'
+                    flexGrow: 1,
+                    padding: '20px',
                 }}
-              />
-              <CardContent>
-                <Typography variant="h6"
-                sx={{
-                  height:"50px"
-                }}
-                >{movie.nameMovie}</Typography>
-                <Link to={`/movie/${movie.id}`}>
-                  <Button variant="contained" sx={{ mt: 2, backgroundColor: '#e50914' }}>
-                    Xem chi tiết
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-      <Footer />
-    </Box>
-  );
+            >
+                <Grid container spacing={4}>
+                    {movies?.map((movie) => (
+                        <Grid item xs={12} sm={6} md={4} key={movie.id}>
+                            <Card sx={{ maxWidth: 370, height: '350px' }}>
+                                <CardMedia
+                                    component="img"
+                                    height="200"
+                                    image={movie.avatar}
+                                    alt={movie.nameMovie}
+                                    sx={{ objectFit: 'contain' }}
+                                />
+                                <CardContent>
+                                    <Typography variant="h6" sx={{ height: '50px' }}>
+                                        {movie.nameMovie}
+                                    </Typography>
+                                    <Link to={`/movie/${movie.id}`}>
+                                        <Button variant="contained" sx={{ mt: 2, backgroundColor: '#e50914' }}>
+                                            Xem chi tiết
+                                        </Button>
+                                    </Link>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Box>
+            <Footer />
+        </Box>
+    );
 }
