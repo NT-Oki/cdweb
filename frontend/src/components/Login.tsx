@@ -48,6 +48,8 @@ const Login = () => {
       login(
           {
             email: data.email,
+            userId: data.userId,
+            avatar: data.avatar,
             name: data.name || 'User',
             role: mappedRole,
           },
