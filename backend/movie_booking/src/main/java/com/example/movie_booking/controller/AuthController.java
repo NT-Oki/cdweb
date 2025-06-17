@@ -35,14 +35,13 @@ public class AuthController {
             return ResponseEntity.badRequest().body(errors);
         }
 
-        // Giả sử User có field getRole() trả về "ROLE_ADMIN" hoặc "ROLE_USER"
         String token = jwtTokenUtil.generateToken(user.getEmail(), user.getRole().getName());
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Đăng nhập thành công");
         response.put("token", token);
         response.put("email", user.getEmail());
-        response.put("fullName", user.getName());
+        response.put("name", user.getName());
         response.put("role", user.getRole().getName());
 
         return ResponseEntity.ok(response);
