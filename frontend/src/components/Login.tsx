@@ -55,7 +55,6 @@ const Login = () => {
           },
           data.token
       );
-
       alert('Đăng nhập thành công!');
       console.log('Chuyển hướng sau đăng nhập:', mappedRole === 'admin' ? '/admin/dashboard' : '/');
       navigate(mappedRole === 'admin' ? '/admin/dashboard' : '/', { replace: true });

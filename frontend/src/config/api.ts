@@ -12,6 +12,8 @@ const ADMIN_USER_URL = `${BASE_URL}/admin/users`;
 
 const API_URLS = {
   BOOKING: {
+    CHOOSE_SHOWTIME: `${BOOKING_URL}/show-time`,
+    GET_SEAT: `${BOOKING_URL}/seats`,
     chooseSeat: `${BOOKING_URL}/choose-seat`,
   },
   MOVIE: {
@@ -46,7 +48,7 @@ const API_URLS = {
     delete: (id: number) => `${ADMIN_USER_URL}/delete/${id}`,
     deleteMultiple: `${ADMIN_USER_URL}/delete-multiple`,
     detail: (id: number) => `${ADMIN_USER_URL}/detail/${id}`,
-  },
+  }
 };
 
 export const apiRequest = async (

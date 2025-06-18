@@ -2,6 +2,7 @@ package com.example.movie_booking.service;
 
 import com.example.movie_booking.dto.BookingDTO;
 import com.example.movie_booking.dto.BookingShowTimeDTO;
+import com.example.movie_booking.dto.SeatResponseDTO;
 import com.example.movie_booking.model.*;
 import com.example.movie_booking.repository.*;
 import jakarta.transaction.Transactional;
@@ -74,4 +75,13 @@ public class BookingService {
         bookingRepository.save(booking);
         return booking;
     }
+    public List<SeatResponseDTO> getAllSeatsByShowTimeId(long showtimeId){
+        List<Seat> seatList=seatRepository.findByShowtimeId(showtimeId);
+        List<SeatResponseDTO> seatResponseDTOS=new ArrayList<>();
+        for(Seat seat:seatList){
+            seatResponseDTOS.add(new SeatResponseDTO(seat));
+        }
+        return seatResponseDTOS;
+    }
+
 }
