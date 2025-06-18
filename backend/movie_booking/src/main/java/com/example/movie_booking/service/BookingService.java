@@ -80,7 +80,7 @@ public class BookingService {
         if(showtime==null){
             return null;
         }
-        List<Seat> seatList=seatRepository.findByShowtimeId(showtimeId);
+        List<Seat> seatList=seatRepository.findByRoomId(showtime.getRoom().getId());
         List<SeatResponseDTO> seatResponseDTOS=new ArrayList<>();
         for(Seat seat:seatList){
             seatResponseDTOS.add(new SeatResponseDTO(seat));

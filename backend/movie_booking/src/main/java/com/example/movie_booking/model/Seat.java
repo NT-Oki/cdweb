@@ -17,7 +17,7 @@ public class Seat {
     private String description;
     @ManyToOne
     @JoinColumn
-    private Showtime showtime;
+    private Room room;
     private int price;
     private int status;
 

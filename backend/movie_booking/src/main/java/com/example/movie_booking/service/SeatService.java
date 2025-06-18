@@ -11,8 +11,8 @@ import java.util.List;
 public class SeatService {
     @Autowired
     ISeatRepository seatRepository;
-    public List<Seat> getAllByShowTimeId(long showtimeId) {
-        return seatRepository.findByShowtimeId(showtimeId);
+    public List<Seat> getAllByShowTimeId(long roomId) {
+        return seatRepository.findByRoomId(roomId);
     }
 
 }
