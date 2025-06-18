@@ -28,7 +28,7 @@ export const SignInPage = lazy(() => import('../admin/pages/sign-in'));
 export const Movie = lazy(() => import('../admin/pages/MovieAdmin'));
 export const Page404 = lazy(() => import('../admin/pages/page-not-found'));
 export const Hello = lazy(() => import('../Hello'));
-export const SeatSelector = lazy(() => import('../SeatSelector2'));
+export const SeatSelector = lazy(() => import('../SeatSelector'));
 export const Checkout =lazy(()=> import(`../Checkout`));
 export const Ticket =lazy(()=> import(`../Ticket`));
 export const ShowTimeAdmin =lazy(()=> import(`../admin/pages/ShowTimeAdmin`));
@@ -127,7 +127,8 @@ export const routesSection: RouteObject[] = [
         ),
     },
     {
-        path: '/booking/chooseSeat/:showtimeId',
+        // path: '/booking/chooseSeat/:showtimeId',
+        path: '/booking/:bookingId/:showtimeId/choose-seat',
         element: <SeatSelector />,
     },
     {

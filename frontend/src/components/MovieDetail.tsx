@@ -138,7 +138,7 @@ const MovieDetail = () => {
         })
         const bookingId= res.data.id;
         localStorage.setItem("bookingId",bookingId);
-        navigate(`/booking/chooseSeat/${id}`)
+        navigate(`/booking/${bookingId}/${id}/choose-seat`)
     }
 
     return (
