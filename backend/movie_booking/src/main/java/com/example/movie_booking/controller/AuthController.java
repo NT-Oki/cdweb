@@ -40,8 +40,10 @@ public class AuthController {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Đăng nhập thành công");
         response.put("token", token);
+        response.put("userId", user.getId());
         response.put("email", user.getEmail());
         response.put("name", user.getName());
+        response.put("avatar", user.getAvatar());
         response.put("role", user.getRole().getName());
 
         return ResponseEntity.ok(response);

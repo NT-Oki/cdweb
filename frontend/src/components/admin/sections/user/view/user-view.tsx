@@ -17,7 +17,7 @@ import { UserTableHead } from '../user-table-head';
 import { TableEmptyRows } from '../table-empty-rows';
 import { UserTableToolbar } from '../user-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
-import { useAuth } from '../../../../../contexts/useAuth';
+import { useAuth } from '../../../../../contexts/AuthContext';
 import API_URLS, { apiRequest } from '../../../../../config/api';
 import type { UserProps } from '../user-table-row';
 

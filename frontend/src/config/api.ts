@@ -4,6 +4,7 @@ const ADMIN_URL = `${BASE_URL}/admin`;
 const MOVIE_URL = `${BASE_URL}/movies`;
 const LOGIN_URL = `${BASE_URL}/login`;
 const REGISTER_URL = `${BASE_URL}/register`;
+const LOGOUT_URL = `${BASE_URL}/logout`;
 const ADMIN_ROOMS_URL = `${ADMIN_URL}/rooms`;
 const ADMIN_SHOWTIMES_URL = `${ADMIN_URL}/showtimes`;
 const ADMIN_MOVIES_URL = `${ADMIN_URL}/movies`;
@@ -22,6 +23,7 @@ const API_URLS = {
   AUTH: {
     login: LOGIN_URL,
     register: REGISTER_URL,
+    logout: LOGOUT_URL,
   },
   ADMIN: {
     room: {
@@ -36,6 +38,8 @@ const API_URLS = {
     movie: {
       list_movie: `${ADMIN_MOVIES_URL}/list`,
       add: `${ADMIN_MOVIES_URL}/add`,
+      detail: (id: number) => `${ADMIN_MOVIES_URL}/detail/${id}`,
+      delete: (id: number) => `${ADMIN_MOVIES_URL}/delete/${id}`,
     },
   },
   ADMIN_USER: {
@@ -68,12 +72,27 @@ export const apiRequest = async (
           logout();
           navigate('/login');
         }
-        throw new Error('Phiên đăng nhập hết hạn hoặc không có quyền truy cập');
+        throw new Error('Phiên đăng nhập không hợp lệ hoặc không có quyền truy cập');
       }
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Lỗi không xác định');
+      let errorMessage = 'Lỗi không xác định';
+      try {
+        const errorData = await response.json();
+        if (typeof errorData === 'object' && errorData !== null) {
+          errorMessage = errorData.message || Object.values(errorData).join(', ') || errorMessage;
+        } else {
+          errorMessage = errorData || errorMessage;
+        }
+      } catch (e) {
+        // Nếu không parse được JSON, dùng status text
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
-    return await response.json();
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return await response.json();
+    }
+    return {};
   } catch (error) {
     console.error('API error:', error);
     throw error;

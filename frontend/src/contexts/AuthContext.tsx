@@ -1,6 +1,9 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+// src/contexts/AuthContext.tsx
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
+import API_URLS, { apiRequest } from '../config/api';
 
-type User = { name: string; role: 'user' | 'admin' };
+type User = { email: string; userId: string; avatar: string; name: string; role: 'user' | 'admin' };
 
 type AuthContextType = {
     user: User | null;
@@ -8,7 +11,7 @@ type AuthContextType = {
     logout: () => void;
 };
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 interface AuthProviderProps {
     children: ReactNode;
@@ -17,6 +20,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -44,11 +48,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem('token', token);
     };
 
-    const logout = () => {
+    const logout = async () => {
         console.log('Logout called');
-        setUser(null);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        try {
+            await apiRequest(API_URLS.AUTH.logout, { method: 'POST' });
+            setUser(null);
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            navigate('/login', { replace: true });
+        } catch (error) {
+            console.error('Logout error:', error);
+            setUser(null);
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            navigate('/login', { replace: true });
+        }
     };
 
     if (loading) {
@@ -60,4 +74,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             {children}
         </AuthContext.Provider>
     );
+};
+
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
 };
