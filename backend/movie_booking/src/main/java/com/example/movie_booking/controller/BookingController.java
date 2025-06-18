@@ -1,20 +1,18 @@
 package com.example.movie_booking.controller;
 
 import com.example.movie_booking.dto.BookingDTO;
-import com.example.movie_booking.dto.BookingShowTimeDTO;
-import com.example.movie_booking.dto.SeatResponseDTO;
+import com.example.movie_booking.dto.booking.ChooseSeatResponseDTO;
+import com.example.movie_booking.dto.booking.SeatResponseDTO;
 import com.example.movie_booking.model.*;
 import com.example.movie_booking.service.BookingService;
 import com.example.movie_booking.service.BookingStatusService;
 import com.example.movie_booking.service.ShowTimeService;
 import com.example.movie_booking.service.UserService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,14 +53,15 @@ public class BookingController {
     /**
      * Bước 2
      * Lấy tất cả seat của showtime được chọn đó ra
+     * Bỏ vào kèm thông tin
      * @return
      */
     @GetMapping("/seats")
     public ResponseEntity<?> getSeats(@RequestParam Long showtimeId) {
         try{
-        List<SeatResponseDTO> seatResponseDTOS=bookingService.getAllSeatsByShowTimeId(showtimeId);
+        ChooseSeatResponseDTO responseDTO=bookingService.getInformationForChooseSeat(showtimeId);
         Map<String, Object> map = new HashMap<>();
-        map.put("seats", seatResponseDTOS);
+        map.put("showtimeDetail", responseDTO);
         return ResponseEntity.ok(map);
         } catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
