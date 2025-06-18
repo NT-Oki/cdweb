@@ -25,8 +25,6 @@ const root = createRoot(document.getElementById('root')!);
 
 root.render(
   <StrictMode>
-      <AuthProvider>
-          <RouterProvider router={router} />
-      </AuthProvider>
+      <RouterProvider router={router} />
   </StrictMode>
 );
