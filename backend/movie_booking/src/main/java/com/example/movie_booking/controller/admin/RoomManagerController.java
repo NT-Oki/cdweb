@@ -1,6 +1,7 @@
 package com.example.movie_booking.controller.admin;
 
 import com.example.movie_booking.dto.RoomAddDTO;
+import com.example.movie_booking.dto.RoomUpdateDTO;
 import com.example.movie_booking.model.Room;
 import com.example.movie_booking.service.RoomService;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,7 +25,7 @@ public class RoomManagerController {
         return ResponseEntity.ok(roomList);
     }
 
-    @PutMapping("/status/{id}")
+    @PutMapping("/soft-delete/{id}")
     public ResponseEntity<?> room(@PathVariable Long id) {
         try{
             roomService.delete(id);
@@ -35,8 +36,8 @@ public class RoomManagerController {
         }
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateRoom(@PathVariable Long id, @RequestBody Room room) {
-       Room result= roomService.update(room);
+    public ResponseEntity<?> updateRoom(@PathVariable Long id, @RequestBody RoomUpdateDTO room) {
+       Room result= roomService.update(id,room);
        if (result != null) {
            return ResponseEntity.ok("Cập nhật thông tin phòng thành công");
        }else{
@@ -46,7 +47,7 @@ public class RoomManagerController {
     @PostMapping("/add")
     public ResponseEntity<?> addRoom(@RequestBody RoomAddDTO dto) {
             try {
-                roomService.add(dto);
+                roomService.addRoom(dto);
                 return ResponseEntity.ok("Thêm phòng thành công");
             }catch (Exception e){
                 return ResponseEntity.badRequest().body("Thêm phòng thất bại");

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -12,6 +12,10 @@ import {
     Alert,
     AlertTitle,
     Container,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import Header from './Header';
@@ -124,7 +128,7 @@ const Seat = ({ seat, onClick, isSelected }: { seat: DisplaySeatInfo; onClick: (
 
 // --- Component SeatSelector chính ---
 export default function SeatSelector() {
-    const { showtimeId } = useParams();
+    const { showtimeId, bookingId, movieId } = useParams();
     const navigate = useNavigate();
     const [showtimeDetails, setShowtimeDetails] = useState<ShowtimeDetail | null>(null);
     const [selectedSeats, setSelectedSeats] = useState<SeatResponseDTO[]>([]);
@@ -133,7 +137,12 @@ export default function SeatSelector() {
     const [bookingError, setBookingError] = useState<string | null>(null);
     const token = localStorage.getItem("token");
 
-    useEffect(() => {
+        // State cho bộ đếm ngược (thời gian còn lại tính bằng giây)
+    const [timeLeft, setTimeLeft] = useState<number>(60); // 10 phút = 600 giây
+    const timerRef = useRef<number | null>(null); // Để lưu trữ ID của setInterval cho timer
+    const [openTimeoutDialog, setOpenTimeoutDialog] = useState<boolean>(false); 
+
+ 
         const fetchShowtimeDetails = async () => {
             setLoading(true);
             setError(null);
@@ -154,11 +163,59 @@ export default function SeatSelector() {
                 setLoading(false);
             }
         };
+           useEffect(() => {
 
         if (showtimeId) {
             fetchShowtimeDetails();
         }
     }, [showtimeId, token]);
+
+
+
+   // useEffect cho Timer
+    useEffect(() => {
+        // Chỉ khởi tạo timer nếu showtimeDetails đã được tải thành công
+        if (showtimeDetails && timeLeft > 0) {
+            timerRef.current = setInterval(() => {
+                setTimeLeft((prevTime) => {
+                    if (prevTime <= 1) {
+                        // Khi hết giờ
+                        clearInterval(timerRef.current!); // Dừng timer
+                        setBookingError("Hết thời gian chọn ghế. Vui lòng chọn lại.");
+                        setSelectedSeats([]); // Xóa các ghế đã chọn
+                        // fetchShowtimeDetails(false); // Cập nhật lại sơ đồ ghế ngay lập tức
+                        // alert("Hết thời gian chọn ghế")
+                        // navigate(`/movie/${movieId}`)
+                          setOpenTimeoutDialog(true);
+                        return 0;
+                    }
+                    return prevTime - 1;
+                });
+            }, 1000); // Giảm 1 giây mỗi giây
+
+            return () => {
+                if (timerRef.current) {
+                    clearInterval(timerRef.current); // Dọn dẹp timer khi component unmount
+                }
+            };
+        } else if (timeLeft === 0 && timerRef.current) {
+            clearInterval(timerRef.current); // Đảm bảo timer được xóa nếu đã về 0
+        }
+    }, [showtimeDetails, timeLeft]); // Thêm showtimeDetails vào dependency để đảm bảo timer chỉ chạy khi dữ liệu có
+
+    const formatTime = (seconds: number) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+      const handleCloseTimeoutDialog = () => {
+        setOpenTimeoutDialog(false); // Đóng dialog
+         navigate(`/movie/${movieId}`, { state: { scrollToShowtime: true } });
+    };
+
+
+
+
 
     const handleSeatClick = (seat: SeatResponseDTO) => {
         if (seat.status === 2) {
@@ -319,6 +376,12 @@ export default function SeatSelector() {
                         <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 3 }}>
                             Ngày: {showDate} - Giờ: {showtimeDetails.startTime.split(' ')[0]}
                         </Typography>
+                          {/* Timer */}
+                        <Box sx={{ textAlign: 'center', mb: 3 }}>
+                            <Typography variant="h6" color={timeLeft <= 60 ? 'error.main' : 'text.primary'}>
+                                Thời gian còn lại: **{formatTime(timeLeft)}**
+                            </Typography>
+                        </Box>
 
                         {/* Màn hình chiếu */}
                         <Box
@@ -453,6 +516,31 @@ export default function SeatSelector() {
             </Box>
 
             <Footer />
+              <Dialog
+                open={openTimeoutDialog}
+                onClose={handleCloseTimeoutDialog} // Khi người dùng nhấn ESC hoặc click ra ngoài
+                aria-labelledby="timeout-dialog-title"
+                aria-describedby="timeout-dialog-description"
+            >
+                <DialogTitle id="timeout-dialog-title" sx={{ color: 'error.main', fontWeight: 'bold' }}>
+                    {"Hết thời gian chọn ghế!"}
+                </DialogTitle>
+                <DialogContent>
+                    <Typography id="timeout-dialog-description" sx={{ mb: 2 }}>
+                        Thời gian dành cho việc chọn ghế của bạn đã hết.
+                        <br />
+                        Vui lòng chọn lại suất chiếu hoặc phim khác.
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Hệ thống sẽ tự động đưa bạn về trang chi tiết phim.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseTimeoutDialog} variant="contained" color="primary">
+                        Đồng ý
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }

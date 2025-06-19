@@ -28,7 +28,7 @@ const API_URLS = {
   ADMIN: {
     room: {
       list_room: `${ADMIN_ROOMS_URL}/list-room`,
-      delete: (id: number) => `${ADMIN_ROOMS_URL}/status/${id}`,
+      delete: (id: number) => `${ADMIN_ROOMS_URL}/soft-delete/${id}`,
       update: (id: number) => `${ADMIN_ROOMS_URL}/${id}`,
       save: `${ADMIN_ROOMS_URL}/add`,
     },
