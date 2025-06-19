@@ -8,12 +8,20 @@ import lombok.*;
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String roomName;
-    private int quantitySeat;
-    private String status;
+    private int totalSeats;
+    private int status;//1 : active 2: inactive 3: deleted
     private String description;
+    private int quantityNormalSeat;
+    private int quantityCoupleSeat;
+    private int priceNormalSeat;
+    private int priceCoupleSeat;
+
 }

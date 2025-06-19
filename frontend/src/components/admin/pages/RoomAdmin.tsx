@@ -16,157 +16,231 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
+  // Không cần import Dialog, DialogTitle, etc. ở đây nữa vì đã được bọc trong RoomDialog
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
-import API_URLS from '../../../config/api';
+import API_URLS from '../../../config/api'; // Đảm bảo đường dẫn này đúng
+import RoomDialog from './RoomDialog'; // Import RoomDialog đã được tách ra
+import { SnackbarProvider, useSnackbar } from 'notistack';
 
+// Định nghĩa lại interface Room để khớp với backend
 interface Room {
   id: number;
   roomName: string;
-  quantitySeat: number;
-  status: string;
+  totalSeats: number; // Thêm trường này để hiển thị tổng số ghế
+  status: 1 | 2 | 3; // Sử dụng string literal types cho status
   description: string;
+  quantityNormalSeat: number;
+  quantityCoupleSeat: number;
+  quantityVipSeat: number; // Giả định có (nếu không có thì xóa đi)
+  priceNormalSeat: number;
+  priceCoupleSeat: number;
+  priceVipSeat: number; // Giả định có (nếu không có thì xóa đi)
+}
+export default function RoomAdminWrapper() {
+  return (
+    <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
+      <RoomAdmin />
+    </SnackbarProvider>
+  );
 }
 
-const sampleRooms: Room[] = [
-  {
-    id: 1,
-    roomName: 'Phòng 1',
-    quantitySeat: 100,
-    status: 'Hoạt động',
-    description: 'Phòng chiếu lớn nhất',
-  },
-  {
-    id: 2,
-    roomName: 'Phòng 2',
-    quantitySeat: 60,
-    status: 'Đang bảo trì',
-    description: 'Phòng chiếu VIP',
-  },
-];
-
-export default function RoomAdmin() {
+ function RoomAdmin() {
   const token = localStorage.getItem("token");
   const [rooms, setRooms] = useState<Room[]>([]);
   const [searchText, setSearchText] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
 
-  const fetchRoom = async () => {
-  try {
-    const response = await axios.get(API_URLS.ADMIN.room.list_room, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    setRooms(response.data)
-  } catch (err: any) {
-    console.log("lỗi lấy danh sách room" + err.response.data);
-  }
-};
+    // States cho Confirm Dialog
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [roomToDeleteId, setRoomToDeleteId] = useState<number | null>(null);
 
-useEffect(() => {
-  fetchRoom();
-}, []);
+  const { enqueueSnackbar } = useSnackbar(); // Hook từ notistack
+
+  const fetchRoom = async () => {
+    try {
+      const response = await axios.get(API_URLS.ADMIN.room.list_room, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      setRooms(response.data);
+      enqueueSnackbar("Tải danh sách phòng thành công", { variant: 'info' });
+    } catch (err: any) {
+      console.log("Lỗi khi lấy danh sách phòng: " + (err.response?.data || err.message));
+      enqueueSnackbar("Lỗi khi tải danh sách phòng.", { variant: 'error' });
+    }
+  };
+
+  useEffect(() => {
+    fetchRoom();
+  }, []);
+
   const filteredRooms = rooms.filter((r) =>
     r.roomName.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const handleOpenDialog = (room?: Room) => {
-    setEditingRoom(room || null);
+    setEditingRoom(room || null); // Nếu không có room, sẽ là null -> chế độ thêm mới
     setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
+    setEditingRoom(null); // Đảm bảo reset editingRoom khi đóng dialog
   };
 
-const handleSaveSuccess = () => {
-  setOpenDialog(false);
-  fetchRoom(); // cập nhật danh sách lại từ API
-};
+  const handleSaveSuccess = () => {
+    setOpenDialog(false);
+    setEditingRoom(null); // Reset editingRoom sau khi lưu thành công
+    fetchRoom(); // Cập nhật danh sách lại từ API
+      enqueueSnackbar("Lưu phòng chiếu thành công!", { variant: 'success' });
+  };
+    const handleOpenConfirmDelete = (id: number) => {
+    setRoomToDeleteId(id);
+    setOpenConfirmDialog(true);
+  };
+    const handleCloseConfirmDelete = () => {
+    setOpenConfirmDialog(false);
+    setRoomToDeleteId(null);
+  };
 
-  const handleDeleteRoom = async (id: number) => {
-    if (window.confirm('Bạn có chắc muốn xóa phòng chiếu này?')) {
-       try{
-      const response= await axios.put(API_URLS.ADMIN.room.delete(id),{
-        id: id,
-      },{
-        headers:{
+  // const handleDeleteRoom = async (id: number) => {
+  //   if (window.confirm('Bạn có chắc muốn xóa phòng chiếu này?')) {
+  //     try {
+  //       const response = await axios.put(API_URLS.ADMIN.room.delete(id), {
+          
+  //       }, {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`
+  //         }
+  //       })
+  //       alert(response.data); // Hoặc hiển thị thông báo thành công đẹp hơn
+  //       fetchRoom(); // Tải lại danh sách sau khi xóa
+  //     } catch (err: any) {
+  //       console.error("Lỗi khi xóa phòng: ", err.response?.data || err.message);
+  //       alert("Lỗi khi xóa phòng: " + (err.response?.data || err.message));
+  //     }
+  //   }
+  // };
+  const handleConfirmDelete = async () => {
+    if (roomToDeleteId === null) return; // Đảm bảo có ID để xóa
+
+    try {
+      const response = await axios.put(API_URLS.ADMIN.room.delete(roomToDeleteId), {}, {
+        headers: {
           Authorization: `Bearer ${token}`
         }
       })
-      alert(response.data)
+      enqueueSnackbar(response.data || "Xóa phòng chiếu thành công!", { variant: 'success' }); // Snackbar thông báo thành công
       fetchRoom();
-    }catch(err:any){
-      console.log(err.response.data);
-      alert(err.response.data)
-    }
+    } catch (err: any) {
+      console.error("Lỗi khi xóa phòng: ", err.response?.data || err.message);
+      enqueueSnackbar("Lỗi khi xóa phòng: " + (err.response?.data?.message || err.message), { variant: 'error' }); // Snackbar thông báo lỗi
+    } finally {
+      handleCloseConfirmDelete(); // Luôn đóng dialog sau khi xử lý
     }
   };
 
+  const getStatusText = (status: 1 | 2 | 3) => {
+    switch (status) {
+      case 1:
+        return 'Đang hoạt động';
+      case 2:
+        return 'Tạm ngưng';
+      case 3:
+        return 'Đã xóa';
+      default:
+        return 'Không xác định';
+    }
+  };
+
+  const getStatusColor = (status: 1 | 2 | 3)  => {
+    switch (status) {
+      case 1:
+        return 'green';
+      case 2:
+        return 'orange';
+      case 3:
+        return 'red';
+      default:
+        return 'black';
+    }
+  };
+
+
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom component="h1"> {/* Thêm component="h1" cho ngữ nghĩa tốt hơn */}
         Quản lý phòng chiếu
       </Typography>
 
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2, alignItems: 'center' }}>
         <TextField
           label="Tìm kiếm theo tên phòng"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           size="small"
-          sx={{ width: 300 }}
+          variant="outlined" // Thêm variant
+          sx={{ width: { xs: '100%', sm: 300 } }} // Đáp ứng di động
         />
-        <Button variant="contained" onClick={() => handleOpenDialog()}>
+        <Button
+          variant="contained"
+          onClick={() => handleOpenDialog()}
+          sx={{ height: '40px' }} // Đồng bộ chiều cao với TextField
+        >
           Thêm phòng chiếu mới
         </Button>
       </Stack>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
+      <TableContainer component={Paper} elevation={3}> {/* Thêm elevation */}
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead sx={{ backgroundColor: '#f5f5f5' }}> {/* Màu nền cho header */}
             <TableRow>
               <TableCell>STT</TableCell>
               <TableCell>Tên phòng</TableCell>
-              <TableCell>Số ghế</TableCell>
+              <TableCell align="center">Tổng số ghế</TableCell> {/* Căn phải */}
+               <TableCell align="center">Ghế thường</TableCell> 
+                <TableCell align="center">Ghế đôi</TableCell> 
               <TableCell>Trạng thái</TableCell>
               <TableCell>Mô tả</TableCell>
-              <TableCell>Hành động</TableCell>
+              <TableCell align="center">Hành động</TableCell> {/* Căn giữa */}
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredRooms.length > 0 ? (
               filteredRooms.map((r, index) => (
-                <TableRow key={r.id}>
-                  <TableCell>{index + 1}</TableCell>
+                <TableRow
+                  key={r.id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row"> {/* Thêm ngữ nghĩa */}
+                    {index + 1}
+                  </TableCell>
                   <TableCell>{r.roomName}</TableCell>
-                  <TableCell>{r.quantitySeat}</TableCell>
+                  <TableCell align="center">{r.totalSeats}</TableCell> {/* Hiển thị totalSeats */}
+                   <TableCell align="center">{r.quantityNormalSeat}</TableCell> 
+                <TableCell align="center">{r.quantityCoupleSeat}</TableCell>
                   <TableCell style={{
-                    color:
-                      r.status === "1"
-                        ? "green"
-                        : r.status === "2"
-                          ? "orange"
-                          : "red",
+                    color: getStatusColor(r.status),
                     fontWeight: "bold",
-                  }}
-                  >{r.status === "1" ? "Đang hoạt động" : r.status === "2" ? "Không hoạt động" : "Đã xóa"}</TableCell>
+                  }}>
+                    {getStatusText(r.status)}
+                  </TableCell>
                   <TableCell>{r.description}</TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     <IconButton onClick={() => handleOpenDialog(r)} color="primary" size="small">
                       <EditIcon />
                     </IconButton>
-                    <IconButton onClick={() => handleDeleteRoom(r.id)} color="error" size="small">
+                    <IconButton onClick={() => handleOpenConfirmDelete(r.id)} color="error" size="small"
+                      disabled={r.status === 3} // Vô hiệu hóa nút xóa nếu đã bị xóa
+                      title={r.status === 3 ? 'Phòng đã bị xóa' : 'Xóa phòng'}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
@@ -174,8 +248,10 @@ const handleSaveSuccess = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} align="center">
-                  Không có phòng chiếu nào
+                <TableCell colSpan={6} align="center" sx={{ py: 3 }}> {/* Tăng padding để đẹp hơn */}
+                  <Typography variant="subtitle1" color="text.secondary">
+                    Không có phòng chiếu nào
+                  </Typography>
                 </TableCell>
               </TableRow>
             )}
@@ -183,100 +259,34 @@ const handleSaveSuccess = () => {
         </Table>
       </TableContainer>
 
-      {openDialog && (
+      {/* RoomDialog được hiển thị khi openDialog là true */}
       <RoomDialog
-  open={openDialog}
-  onClose={handleCloseDialog}
-  room={editingRoom}
-  onSuccess={handleSaveSuccess}
-/>
-      )}
+        open={openDialog}
+        onClose={handleCloseDialog}
+        initialData={editingRoom} // Đổi tên prop từ `room` thành `initialData` cho rõ ràng
+        onSubmit={handleSaveSuccess} // Hàm này sẽ gọi fetchRoom() sau khi lưu thành công
+      />
+       <Dialog
+        open={openConfirmDialog}
+        onClose={handleCloseConfirmDelete}
+        aria-labelledby="confirm-dialog-title"
+        aria-describedby="confirm-dialog-description"
+      >
+        <DialogTitle id="confirm-dialog-title">{"Xác nhận xóa phòng?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="confirm-dialog-description">
+            Bạn có chắc chắn muốn xóa phòng chiếu này không? 
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirmDelete} color="primary">
+            Hủy
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained" autoFocus>
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
-  );
-}
-
-interface RoomDialogProps {
-  open: boolean;
-  onClose: () => void;
-  room: Room | null;
-  onSuccess: () => void;
-}
-
-function RoomDialog({ open, onClose, room, onSuccess }: RoomDialogProps) {
-  const token = localStorage.getItem("token");
-  const [id, setId] = useState(room?.id || 0);
-  const [roomName, setRoomName] = useState(room?.roomName || '');
-  const [quantitySeat, setQuantitySeat] = useState(room?.quantitySeat || 0);
-  const [status, setStatus] = useState(room?.status || '');
-  const [description, setDescription] = useState(room?.description || '');
-
-  const isEdit = room !== null;
-
- const handleSubmit = async () => {
-  if (!roomName || quantitySeat <= 0 || !status) {
-    alert('Vui lòng điền đầy đủ thông tin hợp lệ');
-    return;
-  }
-  try {
-    if (isEdit) {
-      await axios.put(API_URLS.ADMIN.room.update(id), { id, roomName, quantitySeat, status, description }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    } else {
-      await axios.post(API_URLS.ADMIN.room.save, { roomName, quantitySeat, status, description }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    }
-    onSuccess();
-  } catch (err: any) {
-    console.error(err.response?.data || err.message);
-    alert("Có lỗi xảy ra khi lưu phòng.");
-  }
-};
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{isEdit ? 'Chỉnh sửa phòng chiếu' : 'Thêm phòng chiếu mới'}</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          {isEdit && <TextField label="ID" value={id} disabled />}
-          <TextField
-            label="Tên phòng"
-            value={roomName}
-            onChange={(e) => setRoomName(e.target.value)}
-          />
-          <TextField
-            label="Số ghế"
-            type="number"
-            value={quantitySeat}
-            onChange={(e) => setQuantitySeat(Number(e.target.value))}
-          />
-        <FormControl>
-  <FormLabel>Trạng thái</FormLabel>
-  <RadioGroup
-    row
-    value={status}
-    onChange={(e) => setStatus(e.target.value)}
-  >
-    <FormControlLabel value="1" control={<Radio />} label="Đang hoạt động" />
-    <FormControlLabel value="2" control={<Radio />} label="Tạm ngưng" />
-  </RadioGroup>
-</FormControl>
-          <TextField
-            label="Mô tả"
-            multiline
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Hủy</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          {isEdit ? 'Lưu' : 'Thêm'}
-        </Button>
-      </DialogActions>
-    </Dialog>
   );
 }

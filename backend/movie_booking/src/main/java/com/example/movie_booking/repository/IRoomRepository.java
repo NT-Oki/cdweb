@@ -10,9 +10,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IRoomRepository extends JpaRepository<Room, Long> {
-    @Modifying
-    @Transactional
-    @Query("UPDATE Room r SET r.status = '3' WHERE r.id = :id")
-    void updateStatusById(@Param("id") Long id);
+//    @Modifying
+//    @Transactional
+//    @Query("UPDATE Room r SET r.status = '3' WHERE r.id = :id")
+//    void updateStatusById(@Param("id") Long id);
 
 }

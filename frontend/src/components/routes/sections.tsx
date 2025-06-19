@@ -128,7 +128,7 @@ export const routesSection: RouteObject[] = [
     },
     {
         // path: '/booking/chooseSeat/:showtimeId',
-        path: '/booking/:bookingId/:showtimeId/choose-seat',
+        path: '/booking/:bookingId/:movieId/:showtimeId/choose-seat',
         element: <SeatSelector />,
     },
     {
