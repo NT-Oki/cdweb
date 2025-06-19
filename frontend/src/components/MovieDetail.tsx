@@ -5,7 +5,7 @@ import {
     Tabs,
     Tab
 } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import API_URLS from '../config/api';
 import Header from './Header';
@@ -62,6 +62,7 @@ const MovieDetail = () => {
       
       const userId=localStorage.getItem("userId");
       const navigate=useNavigate();
+        const location = useLocation(); // Khai báo useLocation
 
     useEffect(() => {
         if (!id) return;
@@ -80,6 +81,16 @@ const MovieDetail = () => {
             })
             .catch(err => console.error("Lỗi khi tải chi tiết phim:", err));
     }, [id]);
+     useEffect(() => {
+        // Kiểm tra xem có state 'scrollToShowtime' được truyền qua không
+        const shouldScroll = location.state && (location.state as { scrollToShowtime?: boolean }).scrollToShowtime;
+
+        if (shouldScroll && groupedShowtimes && Object.keys(groupedShowtimes).length > 0) {
+            handleScrollToShowtime();
+            // Xóa state sau khi đã cuộn để tránh cuộn lại nếu người dùng refresh trang
+            navigate(location.pathname, { replace: true, state: {} }); 
+        }
+    }, [groupedShowtimes, location.state, navigate, location.pathname]);
 
     if (!movie) {
         return <Typography variant="h6" sx={{ padding: 4 }}>Đang tải chi tiết phim...</Typography>;
@@ -138,7 +149,7 @@ const MovieDetail = () => {
         })
         const bookingId= res.data.id;
         localStorage.setItem("bookingId",bookingId);
-        navigate(`/booking/${bookingId}/${id}/choose-seat`)
+        navigate(`/booking/${bookingId}/${movie.id}/${id}/choose-seat`)
     }
 
     return (
