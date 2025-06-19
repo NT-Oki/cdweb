@@ -11,6 +11,7 @@ import { AuthLayout } from '../admin/layouts/auth';
 import { DashboardLayout } from '../admin/layouts/dashboard';
 import Login from '../Login';
 import Register from '../Register';
+import VerifyEmail from '../VerifyEmail';
 import Home from '../Home';
 import MovieList from '../MovieList';
 import MovieDetail from '../MovieDetail';
@@ -107,6 +108,14 @@ export const routesSection: RouteObject[] = [
         element: (
             <AuthLayout>
                 <Login />
+            </AuthLayout>
+        ),
+    },
+    {
+        path: '/verify-email',
+        element: (
+            <AuthLayout>
+                <VerifyEmail />
             </AuthLayout>
         ),
     },

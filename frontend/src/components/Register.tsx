@@ -28,18 +28,19 @@ const validationSchema = Yup.object({
   confirmPassword: Yup.string()
       .required('Vui lòng xác nhận lại mật khẩu')
       .oneOf([Yup.ref('password')], 'Mật khẩu không tương ứng'),
-  cardId: Yup.string().nullable(), // Không bắt buộc
+  cardId: Yup.string().nullable(),
   phoneNumber: Yup.string()
       .required('Số điện thoại không được để trống')
       .matches(/^0[0-9]{9}$/, 'Số điện thoại không hợp lệ (phải có 10 chữ số, bắt đầu bằng 0)'),
   gender: Yup.boolean()
       .required('Giới tính không được để trống'),
-  address: Yup.string().nullable(), // Không bắt buộc
+  address: Yup.string().nullable(),
 });
 
 const Register = () => {
   const navigate = useNavigate();
   const [serverErrors, setServerErrors] = useState<{ [key: string]: string }>({});
+  const [successMessage, setSuccessMessage] = useState<string>('');
 
   const handleRegister = async (values: {
     email: string;
@@ -84,19 +85,21 @@ const Register = () => {
             phoneNumber: data.phoneNumber,
             gender: data.gender,
             address: data.address,
+            message: data.error || 'Đăng ký thất bại',
           });
         } else {
-          setServerErrors({ message: data.message || 'Đăng ký thất bại' });
+          setServerErrors({ message: data.error || 'Đăng ký thất bại' });
         }
+        setSuccessMessage('');
         return;
       }
 
       setServerErrors({});
-      alert('Đăng ký thành công! Bạn sẽ được chuyển đến trang đăng nhập.');
-      navigate('/login');
+      setSuccessMessage(data.message || 'Vui lòng kiểm tra email để xác minh tài khoản');
     } catch (error: any) {
       console.error('Lỗi khi gọi API register:', error);
       setServerErrors({ message: `Đã xảy ra lỗi: ${error.message || 'Kết nối thất bại'}` });
+      setSuccessMessage('');
     }
   };
 
@@ -106,6 +109,12 @@ const Register = () => {
           <Typography variant="h5" fontWeight="bold" gutterBottom>
             Đăng ký tài khoản
           </Typography>
+
+          {successMessage && (
+              <Typography color="success.main" variant="body2" sx={{ mb: 2 }}>
+                {successMessage}
+              </Typography>
+          )}
 
           {serverErrors.message && (
               <Typography color="error" variant="body2" sx={{ mb: 2 }}>
@@ -232,6 +241,7 @@ const Register = () => {
                       fullWidth
                       size="large"
                       sx={{ mt: 2 }}
+                      disabled={!!successMessage} // Vô hiệu hóa nút sau khi đăng ký thành công
                   >
                     Đăng ký
                   </Button>
