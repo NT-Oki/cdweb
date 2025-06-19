@@ -15,7 +15,8 @@ import java.time.LocalDateTime;
 @Builder
 public class ShowTimeSeat {
     @Id
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "showtime_id", nullable = false)
     private Showtime showtime;
