@@ -1,6 +1,7 @@
 package com.example.movie_booking.controller.admin;
 
 import com.example.movie_booking.dto.ShowTimeAddDTO;
+import com.example.movie_booking.dto.ShowTimeUpdateDTO;
 import com.example.movie_booking.model.Showtime;
 import com.example.movie_booking.service.ShowTimeService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,6 +2,7 @@ package com.example.movie_booking.service;
 
 import com.example.movie_booking.dto.ShowTimeAddDTO;
 import com.example.movie_booking.dto.ShowTimeDTO;
+import com.example.movie_booking.dto.ShowTimeUpdateDTO;
 import com.example.movie_booking.model.*;
 import com.example.movie_booking.repository.*;
 import jakarta.transaction.Transactional;
@@ -120,5 +121,8 @@ public List<Showtime> getShowTimeByMovieId(long movieId) {
                 " and created " + showtimeSeatsToCreate.size() + " ShowtimeSeats.");
 
         return saved;
+    }
+    public Showtime update(long id, ShowTimeUpdateDTO dto){
+        return null;
     }
 }
