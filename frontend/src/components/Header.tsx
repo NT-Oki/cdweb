@@ -1,15 +1,17 @@
-// src/components/Header.tsx
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Button, TextField, Box, IconButton, Menu, MenuItem } from '@mui/material';
-import { Search, AccountCircle } from '@mui/icons-material';
+import { Search, AccountCircle, Language } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import logo from '../assets/images/logo.png';
 import Divider from "@mui/material/Divider";
 
 export default function Header() {
+  const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [languageAnchorEl, setLanguageAnchorEl] = useState<null | HTMLElement>(null);
   const { user, logout } = useAuth();
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,6 +30,19 @@ export default function Header() {
     setAnchorEl(null);
   };
 
+  const handleLanguageMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setLanguageAnchorEl(event.currentTarget);
+  };
+
+  const handleLanguageMenuClose = () => {
+    setLanguageAnchorEl(null);
+  };
+
+  const handleChangeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+    handleLanguageMenuClose();
+  };
+
   const handleLogout = () => {
     logout();
     handleMenuClose();
@@ -42,20 +57,20 @@ export default function Header() {
                 style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}
             >
               <img src={logo} alt="CGV Logo" style={{ height: '50px', marginRight: '10px' }} />
-              Cinema
+              {t('app.name')} {/* "Cinema" hoặc "Rạp phim" */}
             </Link>
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Button component={Link} to="/movie" color="inherit">
-              Phim
+              {t('nav.movies')} {/* "Phim" hoặc "Movies" */}
             </Button>
             <Button component={Link} to="/cinemalist" color="inherit">
-              Rạp
+              {t('nav.cinemas')} {/* "Rạp" hoặc "Cinemas" */}
             </Button>
             <Button component={Link} to="/showtimeschedule" color="inherit">
-              Lịch chiếu
+              {t('nav.showtimes')} {/* "Lịch chiếu" hoặc "Showtimes" */}
             </Button>
-            <Button color="inherit">Ưu đãi</Button>
+            <Button color="inherit">{t('nav.promotions')} {/* "Ưu đãi" hoặc "Promotions" */}</Button>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 2 }}>
             <TextField
@@ -63,13 +78,24 @@ export default function Header() {
                 size="small"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                placeholder="Tìm kiếm phim"
+                placeholder={t('search.placeholder')}
                 sx={{ backgroundColor: 'white', borderRadius: '5px', marginRight: 1 }}
             />
             <IconButton onClick={handleSearchSubmit} color="inherit">
               <Search />
             </IconButton>
           </Box>
+          <IconButton color="inherit" onClick={handleLanguageMenuOpen}>
+            <Language />
+          </IconButton>
+          <Menu
+              anchorEl={languageAnchorEl}
+              open={Boolean(languageAnchorEl)}
+              onClose={handleLanguageMenuClose}
+          >
+            <MenuItem onClick={() => handleChangeLanguage('vi')}>Tiếng Việt (VI)</MenuItem>
+            <MenuItem onClick={() => handleChangeLanguage('en')}>English (EN)</MenuItem>
+          </Menu>
           <IconButton color="inherit" onClick={handleMenuOpen}>
             <AccountCircle />
           </IconButton>
@@ -80,26 +106,33 @@ export default function Header() {
           >
             {user ? (
                 [
-                  <Box sx={{ p: 2, pb: 1.5 }}>
+                  <Box key="user-info" sx={{ p: 2, pb: 1.5 }}>
                     <Typography variant="subtitle2" noWrap>
                       {user.name}
                     </Typography>
-
                     <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
                       {user.email}
                     </Typography>
                   </Box>,
-                  <Divider sx={{ borderStyle: 'dashed' }} />,
-                  <Box sx={{ p: 1 }}>
+                  <Divider key="divider" sx={{ borderStyle: 'dashed' }} />,
+                  <Box key="logout" sx={{ p: 1 }}>
                     <Button fullWidth color="error" size="medium" variant="text" onClick={handleLogout}>
-                      Đăng xuất
+                      {t('nav.logout')} {/* "Đăng xuất" hoặc "Logout" */}
                     </Button>
                   </Box>
                 ]
             ) : (
                 <Box sx={{ p: 1 }}>
-                  <Button fullWidth color="error" size="medium" variant="text" component={Link} to="/login" onClick={handleMenuClose}>
-                    Đăng nhập
+                  <Button
+                      fullWidth
+                      color="error"
+                      size="medium"
+                      variant="text"
+                      component={Link}
+                      to="/login"
+                      onClick={handleMenuClose}
+                  >
+                    {t('nav.login')} {/* "Đăng nhập" hoặc "Login" */}
                   </Button>
                 </Box>
             )}

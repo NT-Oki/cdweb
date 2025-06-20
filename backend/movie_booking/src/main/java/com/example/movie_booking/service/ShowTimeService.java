@@ -7,8 +7,9 @@ import com.example.movie_booking.model.*;
 import com.example.movie_booking.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
-
+import java.util.Locale;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,14 +21,22 @@ import java.util.stream.Collectors;
 public class ShowTimeService {
     @Autowired
     IShowTimeRepository showTimeRepository;
+
     @Autowired
     IShowTimeSeatRepository showtimeSeatRepository;
+
     @Autowired
     ISeatRepository seatRepository;
+
     @Autowired
     IMovieRepository movieRepository;
+
     @Autowired
     IRoomRepository roomRepository;
+
+    @Autowired
+    MessageSource messageSource;
+
 public Showtime getShowtime(long id) {
     return showTimeRepository.getReferenceById(id);
 }
@@ -79,12 +88,12 @@ public List<Showtime> getShowTimeByMovieId(long movieId) {
      * @throws IllegalArgumentException Nếu room hoặc movie trong newShowtime không hợp lệ.
      */
     @Transactional // Đảm bảo toàn bộ hoạt động (lưu showtime và showtimeseat) là một giao dịch
-    public Showtime addShowtime(ShowTimeAddDTO dto) {
+    public Showtime addShowtime(ShowTimeAddDTO dto, Locale locale) {
         Movie movie=movieRepository.findByIdAndStatusFilmId_Id(dto.getMovieId(),1);
         Room room=roomRepository.findById(dto.getRoomId()).orElse(null);
         // Bước 1: Kiểm tra và lưu Showtime cơ bản
         if (movie == null || room == null) {
-            throw new IllegalArgumentException("Showtime must be associated with a valid Room and Movie.");
+            throw new IllegalArgumentException(messageSource.getMessage("showtime.invalid", null, locale));
         }
         Showtime showtime= Showtime.builder()
                 .movie(movie)

@@ -3,15 +3,18 @@ import { Box, TextField, Button, Typography, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import API_URLS from '../config/api';
 
 const validationSchema = Yup.object({
     email: Yup.string()
-        .email('Email không hợp lệ')
-        .required('Email không được để trống'),
+        .email('validation.email.invalid') // Key từ i18n.ts
+        .required('validation.email.empty'),
 });
 
 const ForgotPassword = () => {
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [serverError, setServerError] = useState<string>('');
     const [successMessage, setSuccessMessage] = useState<string>('');
@@ -20,23 +23,29 @@ const ForgotPassword = () => {
         try {
             const response = await fetch(API_URLS.AUTH.forgotPassword, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept-Language': i18n.language, // Gửi ngôn ngữ hiện tại
+                },
                 body: JSON.stringify({ email: values.email }),
                 credentials: 'include',
             });
 
             const data = await response.json();
             if (!response.ok) {
-                setServerError(data.error || 'Yêu cầu đặt lại mật khẩu thất bại');
+                setServerError(t(data.error || 'auth.forgot.failed'));
                 setSuccessMessage('');
+                toast.error(t(data.error || 'auth.forgot.failed'));
                 return;
             }
 
-            setSuccessMessage(data.message || 'Vui lòng kiểm tra email để đặt lại mật khẩu');
+            setSuccessMessage(t(data.message || 'auth.forgot.success'));
             setServerError('');
+            toast.success(t(data.message || 'auth.forgot.success'));
         } catch (error: any) {
-            setServerError(error.message || 'Lỗi kết nối');
+            setServerError(t('auth.forgot.failed'));
             setSuccessMessage('');
+            toast.error(t('auth.forgot.failed'));
         }
     };
 
@@ -44,7 +53,7 @@ const ForgotPassword = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
             <Paper elevation={4} sx={{ padding: 4, width: 400 }}>
                 <Typography variant="h5" fontWeight="bold" gutterBottom>
-                    Quên mật khẩu
+                    {t('auth.forgot.success').split(' ')[0]} {/* "Forgot Password" hoặc "Quên mật khẩu" */}
                 </Typography>
 
                 {successMessage && (
@@ -69,12 +78,12 @@ const ForgotPassword = () => {
                             <Field
                                 as={TextField}
                                 name="email"
-                                label="Email"
+                                label={t('validation.email.empty')}
                                 variant="outlined"
                                 fullWidth
                                 margin="normal"
                                 error={touched.email && !!errors.email}
-                                helperText={touched.email && errors.email}
+                                helperText={touched.email && t(errors.email || '')}
                             />
 
                             <Button
@@ -86,14 +95,14 @@ const ForgotPassword = () => {
                                 sx={{ mt: 2 }}
                                 disabled={!!successMessage}
                             >
-                                Gửi yêu cầu
+                                {t('auth.forgot.success').split(' ')[0]} {/* "Send Request" hoặc "Gửi yêu cầu" */}
                             </Button>
                         </Form>
                     )}
                 </Formik>
 
                 <Typography variant="body2" sx={{ mt: 2 }}>
-                    Quay lại <a href="/login">Đăng nhập</a>
+                    {t('auth.login.success').split(' ')[0]} <a href="/login">{t('auth.login.success')}</a>
                 </Typography>
             </Paper>
         </Box>

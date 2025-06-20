@@ -1,23 +1,15 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Typography,
-  Button,
-  ToggleButton,
-  ToggleButtonGroup,
-  Card,
-  CardContent,
-} from '@mui/material';
+import { Box, Typography, ToggleButton, ToggleButtonGroup, Card, CardContent, Button } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 
-// Định nghĩa kiểu cho dữ liệu lịch chiếu
 type Showtime = {
   cinema: string;
   time: string[];
 };
 
 type ShowtimesData = {
-  [key: string]: Showtime[]; // Tạo index signature cho các ngày
+  [key: string]: Showtime[];
 };
 
 const showtimesData: ShowtimesData = {
@@ -39,6 +31,7 @@ const generateNext7Days = () => {
 };
 
 export default function ShowtimeSchedule() {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
 
   const handleDateChange = (_event: React.MouseEvent<HTMLElement>, newDate: string) => {
@@ -47,53 +40,43 @@ export default function ShowtimeSchedule() {
     }
   };
 
-  // Chắc chắn rằng TypeScript nhận diện được kiểu dữ liệu của selectedDate
   const availableShowtimes = showtimesData[selectedDate] || [];
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h5" fontWeight="bold" gutterBottom>
-        Lịch Chiếu
-      </Typography>
-
-      {/* Chọn ngày */}
-      <ToggleButtonGroup
-        value={selectedDate}
-        exclusive
-        onChange={handleDateChange}
-        sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}
-      >
-        {generateNext7Days().map((date) => {
-          const formatted = date.format('YYYY-MM-DD');
-          return (
-            <ToggleButton key={formatted} value={formatted}>
-              {date.format('DD/MM')}
-            </ToggleButton>
-          );
-        })}
-      </ToggleButtonGroup>
-
-      {/* Hiển thị lịch */}
-      {availableShowtimes.length === 0 ? (
-        <Typography>Không có lịch chiếu cho ngày này.</Typography>
-      ) : (
-        availableShowtimes.map((item, idx) => (
-          <Card key={idx} sx={{ mb: 3 }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                {item.cinema}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                {item.time.map((t, i) => (
-                  <Button key={i} variant="outlined" color="primary">
-                    {t}
-                  </Button>
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
-        ))
-      )}
-    </Box>
+      <Box sx={{ p: 4 }}>
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
+          {t('showtime.schedule')} {/* "Showtime Schedule" hoặc "Lịch chiếu" */}
+        </Typography>
+        <ToggleButtonGroup value={selectedDate} exclusive onChange={handleDateChange} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
+          {generateNext7Days().map((date) => {
+            const formatted = date.format('YYYY-MM-DD');
+            return (
+                <ToggleButton key={formatted} value={formatted}>
+                  {date.format('DD/MM')}
+                </ToggleButton>
+            );
+          })}
+        </ToggleButtonGroup>
+        {availableShowtimes.length === 0 ? (
+            <Typography>{t('showtime.none')}</Typography>
+        ) : (
+            availableShowtimes.map((item, idx) => (
+                <Card key={idx} sx={{ mb: 3 }}>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      {item.cinema}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                      {item.time.map((t, i) => (
+                          <Button key={i} variant="outlined" color="primary">
+                            {t}
+                          </Button>
+                      ))}
+                    </Box>
+                  </CardContent>
+                </Card>
+            ))
+        )}
+      </Box>
   );
 }

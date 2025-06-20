@@ -3,18 +3,21 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Typography, Paper, CircularProgress } from '@mui/material';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import API_URLS from '../config/api';
 
 const validationSchema = Yup.object({
     newPassword: Yup.string()
-        .required('Mật khẩu không được để trống')
-        .min(8, 'Mật khẩu phải từ 8 ký tự trở lên'),
+        .required('validation.password.empty')
+        .min(8, 'validation.password.short'),
     confirmPassword: Yup.string()
-        .required('Vui lòng xác nhận lại mật khẩu')
-        .oneOf([Yup.ref('newPassword')], 'Mật khẩu không tương ứng'),
+        .required('validation.confirmPassword.empty')
+        .oneOf([Yup.ref('newPassword')], 'validation.password.mismatch'),
 });
 
 const ResetPassword = () => {
+    const { t, i18n } = useTranslation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [serverError, setServerError] = useState<string>('');
@@ -25,36 +28,43 @@ const ResetPassword = () => {
     useEffect(() => {
         const resetCode = searchParams.get('code');
         if (!resetCode) {
-            setServerError('Mã đặt lại mật khẩu không hợp lệ');
+            setServerError(t('auth.reset.code.invalid'));
             setLoading(false);
+            toast.error(t('auth.reset.code.invalid'));
             return;
         }
         setCode(resetCode);
         setLoading(false);
-    }, [searchParams]);
+    }, [searchParams, t]);
 
     const handleResetPassword = async (values: { newPassword: string; confirmPassword: string }) => {
         try {
             const response = await fetch(API_URLS.AUTH.resetPassword, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept-Language': i18n.language,
+                },
                 body: JSON.stringify({ resetCode: code, newPassword: values.newPassword, confirmPassword: values.confirmPassword }),
                 credentials: 'include',
             });
 
             const data = await response.json();
             if (!response.ok) {
-                setServerError(data.error || 'Đặt lại mật khẩu thất bại');
+                setServerError(t(data.error || 'auth.reset.failed'));
                 setSuccessMessage('');
+                toast.error(t(data.error || 'auth.reset.failed'));
                 return;
             }
 
-            setSuccessMessage(data.message || 'Đặt lại mật khẩu thành công. Bạn có thể đăng nhập ngay.');
+            setSuccessMessage(t(data.message || 'auth.reset.success'));
             setServerError('');
+            toast.success(t(data.message || 'auth.reset.success'));
             setTimeout(() => navigate('/login'), 3000);
         } catch (error: any) {
-            setServerError(error.message || 'Lỗi kết nối');
+            setServerError(t('auth.reset.failed'));
             setSuccessMessage('');
+            toast.error(t('auth.reset.failed'));
         }
     };
 
@@ -62,7 +72,7 @@ const ResetPassword = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
             <Paper elevation={4} sx={{ padding: 4, width: 400 }}>
                 <Typography variant="h5" fontWeight="bold" gutterBottom>
-                    Đặt lại mật khẩu
+                    {t('auth.reset.success').split(' ')[0]} {/* "Reset Password" hoặc "Đặt lại mật khẩu" */}
                 </Typography>
 
                 {loading && <CircularProgress />}
@@ -88,27 +98,25 @@ const ResetPassword = () => {
                                 <Field
                                     as={TextField}
                                     name="newPassword"
-                                    label="Mật khẩu mới"
+                                    label={t('auth.reset.password')}
                                     type="password"
                                     variant="outlined"
                                     fullWidth
                                     margin="normal"
                                     error={touched.newPassword && !!errors.newPassword}
-                                    helperText={touched.newPassword && errors.newPassword}
+                                    helperText={touched.newPassword && t(errors.newPassword || '')}
                                 />
-
                                 <Field
                                     as={TextField}
                                     name="confirmPassword"
-                                    label="Xác nhận mật khẩu"
+                                    label={t('validation.confirmPassword.empty')}
                                     type="password"
                                     variant="outlined"
                                     fullWidth
                                     margin="normal"
                                     error={touched.confirmPassword && !!errors.confirmPassword}
-                                    helperText={touched.confirmPassword && errors.confirmPassword}
+                                    helperText={touched.confirmPassword && t(errors.confirmPassword || '')}
                                 />
-
                                 <Button
                                     type="submit"
                                     variant="contained"
@@ -118,7 +126,7 @@ const ResetPassword = () => {
                                     sx={{ mt: 2 }}
                                     disabled={!!successMessage}
                                 >
-                                    Đặt lại mật khẩu
+                                    {t('auth.reset.success')} {/* "Reset Password successful" hoặc "Đặt lại mật khẩu thành công" */}
                                 </Button>
                             </Form>
                         )}
@@ -126,7 +134,7 @@ const ResetPassword = () => {
                 )}
 
                 <Typography variant="body2" sx={{ mt: 2 }}>
-                    Quay lại <a href="/login">Đăng nhập</a>
+                    {t('auth.login.success').split(' ')[0]} <a href="/login">{t('auth.login.success')}</a>
                 </Typography>
             </Paper>
         </Box>
