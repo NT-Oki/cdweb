@@ -57,7 +57,8 @@ const API_URLS = {
     },
     booking:{
       list_booking:`${ADMIN_BOOKING_URL}/`,
-      delete_booking:(bookingId:number)=>`${ADMIN_BOOKING_URL}/`
+      delete_booking:(bookingId:number)=>`${ADMIN_BOOKING_URL}/`,
+      SEATS_WEEKLY: `${ADMIN_BOOKING_URL}/seats-weekly`,
     }
   },
   ADMIN_USER: {

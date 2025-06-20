@@ -39,7 +39,6 @@ public class BookingService {
     @Autowired
     IShowTimeSeatRepository showTimeSeatRepository;
 
-
     public Booking save(Booking booking) {
         return bookingRepository.save(booking);
     }
@@ -163,5 +162,8 @@ public class BookingService {
 //        return qr;
 //    }
 
+    public long countSeatsSoldByDate(LocalDate date) {
+        return bookingSeatRepository.countSeatsSoldByDate(date);
+    }
 
 }

@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import API_URLS from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -57,7 +58,6 @@ const Login = () => {
       const mappedRole = rawRole === 'ROLE_ADMIN' ? 'admin' : 'user';
 
       login(
-          
           {
             email: data.email,
             userId: data.userId,
@@ -68,7 +68,7 @@ const Login = () => {
           data.token
       );
       toast.success(t('auth.login.success'));
-      localStorage.setItem("userId",data.userId)
+      localStorage.setItem("userId", data.userId);
       console.log('Chuyển hướng sau đăng nhập:', mappedRole === 'admin' ? '/admin/dashboard' : '/');
       navigate(mappedRole === 'admin' ? '/admin/dashboard' : '/', { replace: true });
     } catch (error: any) {
@@ -79,9 +79,12 @@ const Login = () => {
 
   return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <LanguageSwitcher />
+        </Box>
         <Paper elevation={4} sx={{ padding: 4, width: 400 }}>
           <Typography variant="h5" fontWeight="bold" gutterBottom>
-            {t('auth.login.success').split(' ')[0]} {/* "Login" hoặc "Đăng nhập" */}
+            {t('auth.login')} {/* "Login" hoặc "Đăng nhập" */}
           </Typography>
 
           {serverErrors.message && (
@@ -100,7 +103,7 @@ const Login = () => {
                   <Field
                       as={TextField}
                       name="email"
-                      label={t('validation.email.empty')}
+                      label={t('validation.email')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
@@ -110,7 +113,7 @@ const Login = () => {
                   <Field
                       as={TextField}
                       name="password"
-                      label={t('validation.password.empty')}
+                      label={t('validation.password')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
@@ -135,17 +138,17 @@ const Login = () => {
                       size="large"
                       sx={{ mt: 2 }}
                   >
-                    {t('auth.login.success')} {/* "Login successful" hoặc "Đăng nhập thành công" */}
+                    {t('auth.login')} {/* "Login" hoặc "Đăng nhập" */}
                   </Button>
                 </Form>
             )}
           </Formik>
 
           <Typography variant="body2" sx={{ mt: 2 }}>
-            {t('auth.forgot.success').split(' ')[0]}? <a href="/forgot-password">{t('auth.forgot.success')}</a>
+            {t('auth.forgot')}? <a href="/forgot-password">{t('auth.forgot')}</a> {/* "Forgot Password" hoặc "Quên mật khẩu" */}
           </Typography>
           <Typography variant="body2" sx={{ mt: 1 }}>
-            {t('auth.register.success').split(' ')[0]}? <a href="/register">{t('auth.register.success')}</a>
+            {t('auth.register')}? <a href="/register">{t('auth.register')}</a> {/* "Register" hoặc "Đăng ký" */}
           </Typography>
         </Paper>
       </Box>
