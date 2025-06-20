@@ -30,6 +30,10 @@ public class BookingCheckoutDto {
     private String movieName;
     private String startTime;
     private String roomName;
+    private String bookingCode;
+    private String userName;
+    private String userEmail;
+    private String userCode;
     public BookingCheckoutDto(Booking booking) {
         List<String> nameSeats = new ArrayList<>();
         int quantityNormalSeat = 0;
@@ -57,6 +61,10 @@ public class BookingCheckoutDto {
         this.movieName=booking.getShowTime().getMovie().getNameMovie();
         this.startTime=booking.getShowTime().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
         this.roomName=booking.getShowTime().getRoom().getRoomName();
+        this.bookingCode=booking.getCodeBooking()==null?null:booking.getCodeBooking();
+        this.userName=booking.getUser().getName();
+        this.userEmail=booking.getUser().getEmail();
+        this.userCode=booking.getUser().getCode();
     }
 
 

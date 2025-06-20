@@ -18,6 +18,7 @@ import Home from '../Home';
 import MovieList from '../MovieList';
 import MovieDetail from '../MovieDetail';
 import AdminRoute from './AdminRoute';
+import BookingAdminW from '../admin/pages/BookingAdmin';
 // import ShowtimeSchedule from '../ShowtimeSchedule';
 // import SeatSelector from '../SeatSelector';
 // import Home from '../Home';
@@ -101,6 +102,7 @@ export const routesSection: RouteObject[] = [
                     { path: 'movies', element: <Movie /> },
                     { path: 'showtime', element: <ShowTimeAdmin /> },
                     { path: 'room', element: <RoomAdmin /> },
+                    { path: 'booking', element: <BookingAdminW /> },
                 ],
             },
         ],

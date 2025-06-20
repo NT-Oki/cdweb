@@ -1,12 +1,69 @@
-import React from 'react';
-import { Box, Typography, Paper, Divider,Button } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Typography, Paper, Divider,Button, Toolbar } from '@mui/material';
 import logo from '../assets/images/logo_ticket.png';
-import { useNavigate } from 'react-router';
+import { href, useLocation, useNavigate } from 'react-router';
+import { Image } from '@mui/icons-material';
+import API_URLS from '../config/api';
+import axios from 'axios';
+import Footer from './Footer';
+import Header from './Header';
+interface BookingCheckoutDto {
+  bookingId: number;
+  userId: number;
+  nameSeats: string[];
+  quantityNormalSeat: number;
+  totalPriceNormalSeat: number;
+  quantityCoupleSeat: number;
+  totalPriceCoupleSeat: number;
+  totalPrice: number;
+  movieName: string;
+  startTime: string;
+  roomName: string;
+  bookingCode: string;
+
+}
 
 export default function Ticket() {
     const navigate = useNavigate();
-    
+      const location = useLocation();
+      const[data,setData] = useState<BookingCheckoutDto|null>(null);
+  const bookingId = location.state?.bookingId;
+  const [qrUrl, setQrUrl] = useState<string | undefined>(undefined);
+    useEffect(() => {
+    const fetchQR = async () => {
+      if (!bookingId) return;
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          API_URLS.BOOKING.TICKET(bookingId),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+   
+          }
+        );
+
+        // const imageUrl = URL.createObjectURL(response.data.image);
+        setData(response.data.bookingCheckoutDto);
+         setQrUrl(`data:image/png;base64,${response.data.image}`);
+      } catch (e) {
+        console.error("Lỗi tải QR:", e);
+      }
+    };
+
+    fetchQR();
+  }, [bookingId]);
     return (
+         <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+      }}
+    >
+      <Header />
+      <Toolbar />
         <Box sx={{ p: 4, maxWidth: 1000, mx: 'auto', bgcolor: '#f9fbfd' }}>
             <Box
                 sx={{
@@ -58,23 +115,19 @@ export default function Ticket() {
 
                         <Box
                             component="img"
-                            src="https://barcode.tec-it.com/barcode.ashx?data=143585234&code=Code128&dpi=96"
+                            src={qrUrl}
                             alt="barcode"
                             sx={{ my: 2, width: '80%', maxWidth: 300 }}
                         />
-                        <Typography fontWeight="bold">143585234</Typography>
+
+                        <Typography fontWeight="bold">{data?.bookingCode}</Typography>
 
                         <Divider sx={{ my: 2 }} />
 
                         <Typography variant="body2">
-                            Thông tin vé cũng được gửi về:
+                            Thông tin vé cũng được gửi về Email
                         </Typography>
-                        <Typography variant="body2">
-                            Email: <strong>giadinh05082003@gmail.com</strong>
-                        </Typography>
-                        <Typography variant="body2">
-                            SĐT: <strong>0869 065 848</strong>
-                        </Typography>
+                        
                     </Box>
 
 
@@ -85,37 +138,41 @@ export default function Ticket() {
                 {/* Cột phải: Thông tin vé */}
                 <Paper elevation={8} sx={{ flex: 2, p: 3,}}>
                     <Typography variant="subtitle2" color="text.secondary">
-                        Phim Điện Ảnh Doraemon: Nobita và Cuộc Phiêu Lưu Vào Thế Giới Trong Tranh
+                        {data?.movieName}
                     </Typography>
                     <Typography fontWeight="bold">ThuThao Cinema</Typography>
                     <Typography>
-                        Suất <strong>14:50</strong> - Thứ Sáu, <strong>30/05</strong>
+                        Suất <strong>{data?.startTime}</strong>
                     </Typography>
                     <Typography>
-                        Phòng chiếu <strong>05</strong> - Ghế <strong>E4, E5, E6</strong>
+                        Phòng chiếu <strong>{data?.roomName}</strong> - Ghế <strong>{data?.nameSeats.map((s:string)=>s).join(", ")}</strong>
                     </Typography>
 
                     <Divider sx={{ my: 2 }} />
 
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                        Tóm tắt đơn hàng
-                    </Typography>
+                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+  Tóm tắt đơn hàng
+</Typography>
 
-                    <Box display="flex" justifyContent="space-between">
-                        <Typography>3x Ghế đơn</Typography>
-                        <Typography>210,000 đ</Typography>
-                    </Box>
-                    <Box display="flex" justifyContent="space-between">
-                        <Typography>Phí tiện ích</Typography>
-                        <Typography>2,500 đ</Typography>
-                    </Box>
+<Box display="flex" justifyContent="space-between" mb={1}>
+  <Typography>{data?.quantityNormalSeat}x Ghế đơn</Typography>
+  <Typography>{(data?.totalPriceNormalSeat || 0).toLocaleString('vi-VN')} vnđ</Typography>
+</Box>
 
-                    <Divider sx={{ my: 1 }} />
+<Box display="flex" justifyContent="space-between" mb={1}>
+  <Typography>{data?.quantityCoupleSeat}x Ghế đôi</Typography>
+  <Typography>{(data?.totalPriceCoupleSeat || 0).toLocaleString('vi-VN')} vnđ</Typography>
+</Box>
 
-                    <Box display="flex" justifyContent="space-between">
-                        <Typography fontWeight="bold">Tổng</Typography>
-                        <Typography fontWeight="bold">212,500 đ</Typography>
-                    </Box>
+<Divider sx={{ my: 1 }} />
+
+<Box display="flex" justifyContent="space-between">
+  <Typography fontWeight="bold">Tổng</Typography>
+  <Typography fontWeight="bold">
+    {data?.totalPrice?.toLocaleString('vi-VN')} vnđ
+  </Typography>
+</Box>
+
                       <Box
           sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt:3 }}
         >
@@ -127,6 +184,8 @@ export default function Ticket() {
         </Box>
                 </Paper>
             </Box>
+        </Box>
+        <Footer></Footer>
         </Box>
     );
 }

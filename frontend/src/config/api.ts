@@ -12,12 +12,16 @@ const ADMIN_ROOMS_URL = `${ADMIN_URL}/rooms`;
 const ADMIN_SHOWTIMES_URL = `${ADMIN_URL}/showtimes`;
 const ADMIN_MOVIES_URL = `${ADMIN_URL}/movies`;
 const ADMIN_USER_URL = `${BASE_URL}/admin/users`;
+const ADMIN_BOOKING_URL = `${ADMIN_URL}/bookings`;
 
 const API_URLS = {
   BOOKING: {
     CHOOSE_SHOWTIME: `${BOOKING_URL}/show-time`,
     GET_SEAT: `${BOOKING_URL}/seats`,
     TOCHECKOUT: `${BOOKING_URL}/choose-seat`,
+    PAYMENT:`${BOOKING_URL}/payment`,
+    CREATE_BOOKING_SUCCESSFUL:(bookingId:number)=>`${BOOKING_URL}/payment-sucessful/${bookingId}`,
+    TICKET:(bookingId:number)=>`${BOOKING_URL}/ticket/${bookingId}`,
   },
   MOVIE: {
     list: `${MOVIE_URL}/list`,
@@ -50,6 +54,10 @@ const API_URLS = {
       detail: (id: number) => `${ADMIN_MOVIES_URL}/detail/${id}`,
       delete: (id: number) => `${ADMIN_MOVIES_URL}/delete/${id}`,
     },
+    booking:{
+      list_booking:`${ADMIN_BOOKING_URL}/`,
+      delete_booking:(bookingId:number)=>`${ADMIN_BOOKING_URL}/`
+    }
   },
   ADMIN_USER: {
     list: `${ADMIN_USER_URL}/list`,

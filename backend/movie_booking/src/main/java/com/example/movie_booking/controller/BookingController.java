@@ -3,13 +3,18 @@ package com.example.movie_booking.controller;
 import com.example.movie_booking.dto.BookingDTO;
 import com.example.movie_booking.dto.booking.BookingCheckoutDto;
 import com.example.movie_booking.dto.booking.ChooseSeatResponseDTO;
+import com.example.movie_booking.dto.payment.PaymentRequestDTO;
 import com.example.movie_booking.model.*;
 import com.example.movie_booking.service.BookingService;
+import com.example.movie_booking.util.CodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,4 +77,41 @@ public class BookingController {
             return ResponseEntity.badRequest().body("Chọn ghế thất bại"+ e.getMessage());
         }
     }
+//    @PostMapping("/payment")
+//    public ResponseEntity<?> payment(@RequestBody PaymentRequestDTO dto) {
+//        String qr = bookingService.createQR(dto);
+//        return ResponseEntity.ok(qr);
+//    }
+
+    @PostMapping("/payment-sucessful/{bookingId}")
+    public ResponseEntity<?> createBookingSuccessful(@PathVariable long bookingId) {
+        try{
+            Booking booking=bookingService.paymentSuccessful(bookingId);
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", booking.getId());
+            return ResponseEntity.ok(map);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+@GetMapping("/ticket/{bookingId}")
+public ResponseEntity<?> getQRCode(@PathVariable long bookingId) {
+    try {
+        // Giả sử lấy dữ liệu từ DB (ở đây hardcode để demo)
+        String qrContent = bookingService.buildQRContent(bookingId);
+        Booking booking=bookingService.getBooking(bookingId);
+        BookingCheckoutDto bookingCheckoutDto=new BookingCheckoutDto(booking);
+        byte[] image = CodeGenerator.generateQRCodeImage(qrContent, 300, 300);
+        String imageBase64 = Base64.getEncoder().encodeToString(image);
+        HttpHeaders headers = new HttpHeaders();
+
+        Map<String,Object> map = new HashMap<>();
+        map.put("image", imageBase64);
+        map.put("bookingCheckoutDto",bookingCheckoutDto);
+        return ResponseEntity.ok().body(map);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.badRequest().build();
+    }
+}
 }
