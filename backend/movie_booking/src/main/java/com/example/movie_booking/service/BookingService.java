@@ -140,6 +140,16 @@ public class BookingService {
         return mapper.writeValueAsString(data);
     }
 
+    public List<BookingCheckoutDto> getAllBookings() {
+        List<BookingCheckoutDto> list=new ArrayList<>();
+        List<Booking> bookings=bookingRepository.findAll();
+        for(Booking booking:bookings){
+            BookingCheckoutDto bookingCheckoutDto=new BookingCheckoutDto(booking);
+            list.add(bookingCheckoutDto);
+        }
+        return list;
+    }
+
 
 //    public String createQR(PaymentRequestDTO dto){
 //        String qr="https://img.vietqr.io/image/BIDV-3148149366-compact.png?amount="+dto.getAmount()+

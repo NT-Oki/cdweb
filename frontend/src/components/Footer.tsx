@@ -14,13 +14,13 @@ export default function Footer() {
       textAlign: 'center',
     }}>
       <Typography variant="body2" sx={{ mb: 1 }}>
-        © 2025 CGV Việt Nam
+        © 2025 ThuThao Cinema
       </Typography>
-      <Typography variant="body2">
+      {/* <Typography variant="body2">
         <Link href="#" color="inherit" sx={{ marginRight: '10px' }}>Giới thiệu</Link>
         <Link href="#" color="inherit" sx={{ marginRight: '10px' }}>Chính sách bảo mật</Link>
         <Link href="#" color="inherit">Điều khoản sử dụng</Link>
-      </Typography>
+      </Typography> */}
     </Box>
   );
 }

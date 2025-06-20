@@ -12,4 +12,5 @@ public class RoomAddDTO {
     private int quantityCoupleSeat;
     private int priceNormalSeat;
     private int priceCoupleSeat;
+
 }

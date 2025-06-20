@@ -12,6 +12,7 @@ const ADMIN_ROOMS_URL = `${ADMIN_URL}/rooms`;
 const ADMIN_SHOWTIMES_URL = `${ADMIN_URL}/showtimes`;
 const ADMIN_MOVIES_URL = `${ADMIN_URL}/movies`;
 const ADMIN_USER_URL = `${BASE_URL}/admin/users`;
+const ADMIN_BOOKING_URL = `${ADMIN_URL}/bookings`;
 
 const API_URLS = {
   BOOKING: {
@@ -53,6 +54,10 @@ const API_URLS = {
       detail: (id: number) => `${ADMIN_MOVIES_URL}/detail/${id}`,
       delete: (id: number) => `${ADMIN_MOVIES_URL}/delete/${id}`,
     },
+    booking:{
+      list_booking:`${ADMIN_BOOKING_URL}/`,
+      delete_booking:(bookingId:number)=>`${ADMIN_BOOKING_URL}/`
+    }
   },
   ADMIN_USER: {
     list: `${ADMIN_USER_URL}/list`,

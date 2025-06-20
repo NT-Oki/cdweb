@@ -42,5 +42,9 @@ export const navData = [
     title: 'Room',
     path: '/admin/room',
   },
+  {
+    title: 'Booking',
+    path: '/admin/booking',
+  },
   
 ];
