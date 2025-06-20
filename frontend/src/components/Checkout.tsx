@@ -3,6 +3,8 @@ import { Box, Typography, TextField, Button, Toolbar } from "@mui/material";
 import { useNavigate } from "react-router";
 import Header from "./Header";
 import axios from "axios";
+import API_URLS from "../config/api";
+import Footer from "./Footer";
 interface BookingCheckoutDto {
   bookingId: number;
   userId: number;
@@ -18,15 +20,39 @@ interface BookingCheckoutDto {
 
 }
 const CheckoutPage = () => {
-
+  const token =localStorage.getItem("token");
   const navigate = useNavigate();
   const dataJson = sessionStorage.getItem("bookingCheckoutDto");
   const data: BookingCheckoutDto | null = dataJson ? JSON.parse(dataJson) : null;
 
 
-  const getTicket = () => {
-    navigate("/ticket")
+ const getTicket = async () => {
+  const request = {
+    amount: data?.totalPrice,
+    addInfo: "Thanh toán vé xem phim"
+  };
+
+  try {
+    const res = await axios.post(
+      API_URLS.BOOKING.CREATE_BOOKING_SUCCESSFUL(Number(data?.bookingId)),
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      }
+    );
+
+    // Gửi bookingId sang trang "/ticket"
+    navigate("/ticket", {
+      state: { bookingId: res.data.id }
+    });
+  } catch (error) {
+    console.error("Lỗi khi gửi thanh toán:", error);
   }
+};
+
+
   return (
     <Box
       sx={{
@@ -191,6 +217,7 @@ const CheckoutPage = () => {
 
         </Box>
       </Box>
+      <Footer></Footer>
     </Box>
   );
 };

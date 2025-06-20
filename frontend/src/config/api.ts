@@ -18,6 +18,9 @@ const API_URLS = {
     CHOOSE_SHOWTIME: `${BOOKING_URL}/show-time`,
     GET_SEAT: `${BOOKING_URL}/seats`,
     TOCHECKOUT: `${BOOKING_URL}/choose-seat`,
+    PAYMENT:`${BOOKING_URL}/payment`,
+    CREATE_BOOKING_SUCCESSFUL:(bookingId:number)=>`${BOOKING_URL}/payment-sucessful/${bookingId}`,
+    TICKET:(bookingId:number)=>`${BOOKING_URL}/ticket/${bookingId}`,
   },
   MOVIE: {
     list: `${MOVIE_URL}/list`,
