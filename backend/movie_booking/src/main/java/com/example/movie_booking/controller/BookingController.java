@@ -20,7 +20,7 @@ public class BookingController {
     BookingService bookingService;
 
     @Autowired
-    private MessageSource messageSource;
+    MessageSource messageSource;
 
     /**
      * Buoc 1
@@ -32,9 +32,11 @@ public class BookingController {
     public ResponseEntity<?> booking(@RequestBody BookingDTO dto, Locale locale) {//userId, showtimeId
         try {
             Booking booking = bookingService.createBooking(dto);
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", booking.getId());
-            return ResponseEntity.ok(map);
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", booking.getId());
+            response.put("message",
+                    messageSource.getMessage("booking.create.success", new Object[]{booking.getId()}, locale));
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
