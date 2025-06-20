@@ -19,10 +19,8 @@ public class PendingUser {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
     private String password; // Lưu mật khẩu đã mã hóa
 
     private String cardId;

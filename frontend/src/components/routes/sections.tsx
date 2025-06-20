@@ -12,6 +12,8 @@ import { DashboardLayout } from '../admin/layouts/dashboard';
 import Login from '../Login';
 import Register from '../Register';
 import VerifyEmail from '../VerifyEmail';
+import ForgotPassword from '../ForgotPassword';
+import ResetPassword from '../ResetPassword';
 import Home from '../Home';
 import MovieList from '../MovieList';
 import MovieDetail from '../MovieDetail';
@@ -116,6 +118,22 @@ export const routesSection: RouteObject[] = [
         element: (
             <AuthLayout>
                 <VerifyEmail />
+            </AuthLayout>
+        ),
+    },
+    {
+        path: '/forgot-password',
+        element: (
+            <AuthLayout>
+                <ForgotPassword />
+            </AuthLayout>
+        ),
+    },
+    {
+        path: '/reset-password',
+        element: (
+            <AuthLayout>
+                <ResetPassword />
             </AuthLayout>
         ),
     },

@@ -77,4 +77,34 @@ public class EmailService {
             throw new RuntimeException("Lỗi khi gửi email xác minh: " + e.getMessage());
         }
     }
+
+    public void sendPasswordResetEmail(String to, String name, String resetCode) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(to);
+            helper.setSubject("Đặt lại mật khẩu Movie Booking");
+
+            String resetLink = "http://localhost:5173/reset-password?code=" + resetCode;
+            String emailContent = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>"
+                    + "<h2 style='color: #e50914; text-align: center;'>Đặt lại mật khẩu Movie Booking</h2>"
+                    + "<p>Kính gửi " + name + ",</p>"
+                    + "<p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>"
+                    + "<p>Vui lòng nhấn vào nút dưới đây để đặt lại mật khẩu:</p>"
+                    + "<p style='text-align: center; margin: 20px 0;'>"
+                    + "<a href='" + resetLink + "' style='background-color: #e50914; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Đặt lại mật khẩu</a>"
+                    + "</p>"
+                    + "<p>Nếu nút không hoạt động, bạn có thể sao chép và dán link sau vào trình duyệt:</p>"
+                    + "<p><a href='" + resetLink + "'>" + resetLink + "</a></p>"
+                    + "<p>Link này sẽ hết hạn sau 24 giờ.</p>"
+                    + "<p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>"
+                    + "<p style='margin-top: 20px; color: #7f8c8d;'>Trân trọng,<br/>Đội ngũ Movie Booking</p>"
+                    + "</div>";
+
+            helper.setText(emailContent, true);
+            mailSender.send(message);
+        } catch (MessagingException | MailException e) {
+            throw new RuntimeException("Lỗi khi gửi email đặt lại mật khẩu: " + e.getMessage());
+        }
+    }
 }
