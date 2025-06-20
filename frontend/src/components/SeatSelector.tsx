@@ -26,6 +26,7 @@ import API_URLS from '../config/api';
 
 // --- Interfaces (Đảm bảo khớp với Response từ Backend) ---
 interface ShowtimeSeatResponseDTO {
+    seatId: number;
     showtimeSeatId: number;
     seatNumber: string;
     seatRow: string;
@@ -141,13 +142,15 @@ export default function SeatSelector() {
     const [error, setError] = useState<string | null>(null);
     const [bookingError, setBookingError] = useState<string | null>(null);
     const token = localStorage.getItem("token");
+    const userId=localStorage.getItem("userId")
+    
 
     // State cho ghế được nhóm theo hàng để hiển thị
     const [seatsGroupedByRow, setSeatsGroupedByRow] = useState<Record<string, DisplaySeatInfo[]>>({});
     const [orderedRowKeys, setOrderedRowKeys] = useState<string[]>([]);
 
     // State cho bộ đếm ngược (thời gian còn lại tính bằng giây)
-    const [timeLeft, setTimeLeft] = useState<number>(60); // 10 phút = 600 giây
+    const [timeLeft, setTimeLeft] = useState<number>(600); // 10 phút = 600 giây
     const timerRef = useRef<number | null>(null); // Để lưu trữ ID của setInterval cho timer
     const [openTimeoutDialog, setOpenTimeoutDialog] = useState<boolean>(false);
 
@@ -271,23 +274,23 @@ export default function SeatSelector() {
         }
         setBookingError(null);
 
-        const userId = localStorage.getItem('userId');
+        
 
-        if (!token || !userId) {
-            setBookingError("Bạn cần đăng nhập để đặt vé. Đang chuyển hướng...");
-            setTimeout(() => navigate('/login'), 1500);
-            return;
-        }
+        // if (!token || !userId) {
+        //     setBookingError("Bạn cần đăng nhập để đặt vé. Đang chuyển hướng...");
+        //     setTimeout(() => navigate('/login'), 1500);
+        //     return;
+        // }
 
         try {
             const bookingRequest = {
-                userId: parseInt(userId),
-                showtimeId: parseInt(showtimeId || '0'),
-                selectedSeatIds: selectedSeats.map(s => s.showtimeSeatId), // Gửi showtimeSeatId
+                bookingId:Number(bookingId),
+                showtimeSeats: selectedSeats.map(s => s.showtimeSeatId), // Gửi showtimeSeatId
+                totalAmount:totalAmount
             };
 
             const response = await axios.post(
-                API_URLS.BOOKING.CHOOSE_SHOWTIME,
+                API_URLS.BOOKING.TOCHECKOUT,
                 bookingRequest,
                 {
                     headers: {
@@ -298,6 +301,7 @@ export default function SeatSelector() {
 
             const receivedBookingId = response.data.bookingId;
             localStorage.setItem("bookingId", receivedBookingId);
+            sessionStorage.setItem("bookingCheckoutDto", JSON.stringify(response.data));
             navigate("/checkout");
         } catch (err: any) {
             console.error("Lỗi khi tạo booking:", err.response?.data || err.message);

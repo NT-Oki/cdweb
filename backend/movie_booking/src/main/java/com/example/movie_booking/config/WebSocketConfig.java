@@ -26,6 +26,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // Client sẽ kết nối tới ws://localhost:8080/ws
         // .setAllowedOrigins("*") cho phép tất cả các origin (trong môi trường dev).
         // Trong production, bạn nên giới hạn các domain cụ thể.
-        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+        registry.addEndpoint("/ws")
+                .addInterceptors(new AuthHandshakeInterceptor())
+                .setAllowedOriginPatterns("*").withSockJS();
     }
 }

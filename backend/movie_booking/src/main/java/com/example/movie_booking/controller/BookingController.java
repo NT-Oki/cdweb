@@ -1,6 +1,7 @@
 package com.example.movie_booking.controller;
 
 import com.example.movie_booking.dto.BookingDTO;
+import com.example.movie_booking.dto.booking.BookingCheckoutDto;
 import com.example.movie_booking.dto.booking.ChooseSeatResponseDTO;
 import com.example.movie_booking.model.*;
 import com.example.movie_booking.service.BookingService;
@@ -56,13 +57,17 @@ public class BookingController {
         }
     }
 
+    /**
+     * Lưu danh sách ghế chọn vào booking
+     *
+     * @param dto
+     * @return
+     */
     @PostMapping("/choose-seat")
     public ResponseEntity<?> chooseSeats(@RequestBody BookingDTO dto) {//bookingId, seats :[1,2,3]
         try{
-        Booking booking = bookingService.addSeats(dto);
-        booking=bookingService.updateTotalAmount(dto.getBookingId());
-            System.out.println(booking.getTotalAmount());
-        return ResponseEntity.ok(booking);
+        BookingCheckoutDto checkoutDto = bookingService.addSeats(dto);
+        return ResponseEntity.ok(checkoutDto);
         }catch (Exception e){
             return ResponseEntity.badRequest().body("Chọn ghế thất bại"+ e.getMessage());
         }

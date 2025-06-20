@@ -1,6 +1,7 @@
 package com.example.movie_booking.service;
 
 import com.example.movie_booking.dto.BookingDTO;
+import com.example.movie_booking.dto.booking.BookingCheckoutDto;
 import com.example.movie_booking.dto.booking.ChooseSeatResponseDTO;
 import com.example.movie_booking.dto.booking.ShowtimeSeatResponseDTO;
 import com.example.movie_booking.model.*;
@@ -52,19 +53,31 @@ public class BookingService {
         return bookingRepository.getReferenceById(id);
     }
 
-    public Booking addSeats(BookingDTO dto) {
-        Booking booking = bookingRepository.getReferenceById(dto.getBookingId());
+    public BookingCheckoutDto addSeats(BookingDTO dto) {
+        Booking booking = bookingRepository.findById(dto.getBookingId()).orElse(null);
+        if (booking == null) {
+            return null;
+        }
         List<BookingSeat> seatList = new ArrayList<>();
-        BookingSeat bookingSeat = new BookingSeat();
-        for (Long l : dto.getSeats()) {
-            Seat seat = seatRepository.getReferenceById(l);
+
+        for (Long l : dto.getShowtimeSeats()) {
+            BookingSeat bookingSeat = new BookingSeat();
+            ShowTimeSeat showTimeSeat=showTimeSeatRepository.findById(l).orElse(null);
+            if(showTimeSeat==null){
+                return null;
+            }
+            Seat seat = showTimeSeat.getSeat();
             bookingSeat.setBooking(booking);
             bookingSeat.setSeat(seat);
-            bookingSeat.setPrice(seat.getPrice());
+            bookingSeat.setPrice(showTimeSeat.getPrice());
             seatList.add(bookingSeat);
         }
+        bookingSeatRepository.deleteByBookingId(booking.getId());
         bookingSeatRepository.saveAll(seatList);
-        return booking;
+        booking.setTotalAmount(dto.getTotalAmount());
+        bookingRepository.save(booking);
+        BookingCheckoutDto bookingCheckoutDto=new BookingCheckoutDto(booking);
+        return bookingCheckoutDto;
     }
     public Booking updateTotalAmount(long id){
         Booking booking = bookingRepository.getReferenceById(id);

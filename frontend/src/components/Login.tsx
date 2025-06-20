@@ -46,6 +46,7 @@ const Login = () => {
       console.log('User trước khi login:', { email: data.email, name: data.name, role: mappedRole });
 
       login(
+          
           {
             email: data.email,
             userId: data.userId,
@@ -56,6 +57,7 @@ const Login = () => {
           data.token
       );
       alert('Đăng nhập thành công!');
+      localStorage.setItem("userId",data.userId)
       console.log('Chuyển hướng sau đăng nhập:', mappedRole === 'admin' ? '/admin/dashboard' : '/');
       navigate(mappedRole === 'admin' ? '/admin/dashboard' : '/', { replace: true });
     } catch (error: any) {
