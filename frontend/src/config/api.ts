@@ -4,6 +4,7 @@ const ADMIN_URL = `${BASE_URL}/admin`;
 const MOVIE_URL = `${BASE_URL}/movies`;
 const LOGIN_URL = `${BASE_URL}/login`;
 const REGISTER_URL = `${BASE_URL}/register`;
+const VERIFY_URL = `${BASE_URL}/verify-email`;
 const LOGOUT_URL = `${BASE_URL}/logout`;
 const ADMIN_ROOMS_URL = `${ADMIN_URL}/rooms`;
 const ADMIN_SHOWTIMES_URL = `${ADMIN_URL}/showtimes`;
@@ -23,6 +24,7 @@ const API_URLS = {
   AUTH: {
     login: LOGIN_URL,
     register: REGISTER_URL,
+    verifyEmail: VERIFY_URL,
     logout: LOGOUT_URL,
   },
   ADMIN: {

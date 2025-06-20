@@ -20,26 +20,32 @@ public class UserManagerController {
     @Autowired
     private UserService userService;
 
-    // Lấy danh sách user trả về JSON
     @GetMapping("/list")
     public ResponseEntity<List<User>> list() {
         List<User> members = userService.findAllMembers();
         return ResponseEntity.ok(members);
     }
 
-    // Thêm user mới
     @PostMapping("/add")
     public ResponseEntity<?> add(@Valid @RequestBody AdminRegisterDto form, BindingResult result) {
         Map<String, String> errors = new HashMap<>();
 
-        if (!form.getPassword().equals(form.getConfirmPassword())) {
-            errors.put("confirmPassword", "Mật khẩu không tương ứng. Thử lại.");
+        // Kiểm tra password và confirmPassword khi thêm mới (id == null)
+        if (form.getId() == null) {
+            if (form.getPassword() == null || form.getPassword().isEmpty()) {
+                errors.put("password", "Mật khẩu không được để trống khi thêm mới");
+            } else if (!form.getPassword().equals(form.getConfirmPassword())) {
+                errors.put("confirmPassword", "Mật khẩu không tương ứng. Thử lại.");
+            }
         }
 
-        if (userService.findByEmail(form.getEmail().trim().toLowerCase()) != null) {
+        // Kiểm tra email trùng
+        User existingUser = userService.findByEmail(form.getEmail().trim().toLowerCase());
+        if (existingUser != null && (form.getId() == null || !existingUser.getId().equals(form.getId()))) {
             errors.put("email", "Email này đã có người đăng ký. Thử lại.");
         }
 
+        // Kiểm tra lỗi validation
         if (result.hasErrors()) {
             result.getFieldErrors().forEach(err ->
                     errors.put(err.getField(), err.getDefaultMessage())
@@ -50,19 +56,19 @@ public class UserManagerController {
             return ResponseEntity.badRequest().body(errors);
         }
 
-//        String role = "ROLE_USER";
-        User user = userService.convertToUser(form);
-        userService.save(user);
-
-        Map<String, String> successData = new HashMap<>();
-        successData.put("message", "Đăng ký thành công!");
-        successData.put("fullName", form.getName());
-        successData.put("email", form.getEmail());
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(successData);
+        try {
+            User savedUser = userService.save(form);
+            Map<String, String> successData = new HashMap<>();
+            successData.put("message", form.getId() == null ? "Đăng ký thành công!" : "Cập nhật thành công!");
+            successData.put("fullName", savedUser.getName());
+            successData.put("email", savedUser.getEmail());
+            return ResponseEntity.status(form.getId() == null ? HttpStatus.CREATED : HttpStatus.OK).body(successData);
+        } catch (IllegalArgumentException e) {
+            errors.put("role", e.getMessage());
+            return ResponseEntity.badRequest().body(errors);
+        }
     }
 
-    // Xóa user theo id (dùng DELETE là đúng RESTful)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") Long userId) {
         Map<String, String> errors = new HashMap<>();
@@ -109,8 +115,6 @@ public class UserManagerController {
         return ResponseEntity.ok(response);
     }
 
-
-    // Xem chi tiết user theo id
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> detail(@PathVariable("id") Long userId) {
         User user = userService.findById(userId);
@@ -121,8 +125,6 @@ public class UserManagerController {
             return ResponseEntity.badRequest().body(errors);
         }
 
-        // Trả về user dưới dạng JSON
         return ResponseEntity.ok(user);
     }
-
 }

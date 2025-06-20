@@ -11,15 +11,13 @@ import lombok.Setter;
 @Setter
 public class AdminRegisterDto {
 
+    private Long id;
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không hợp lệ")
     private String email;
 
-    @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 8, message = "Mật khẩu phải có ít nhất 8 ký tự")
     private String password;
 
-    @NotBlank(message = "Vui lòng xác nhận lại mật khẩu")
     private String confirmPassword;
 
     @NotBlank(message = "Họ tên không được để trống")

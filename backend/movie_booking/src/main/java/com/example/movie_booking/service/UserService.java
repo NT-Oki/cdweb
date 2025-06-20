@@ -1,17 +1,21 @@
 package com.example.movie_booking.service;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import com.example.movie_booking.dto.AdminRegisterDto;
 import com.example.movie_booking.dto.RegisterDto;
+import com.example.movie_booking.model.PendingUser;
 import com.example.movie_booking.model.Role;
 import com.example.movie_booking.model.User;
+import com.example.movie_booking.repository.PendingUserRepository;
 import com.example.movie_booking.repository.IRoleRepository;
 import com.example.movie_booking.repository.IUserRepository;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -22,65 +26,150 @@ public class UserService {
     private IUserRepository userRepository;
 
     @Autowired
+    private PendingUserRepository pendingUserRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public User convertToUser(RegisterDto dto, String roleName) {
-        Role role = roleRepository.findByName(roleName);
-        if (role == null) {
-            role = new Role();
-            role.setName(roleName);
-            roleRepository.save(role);
+    public PendingUser savePendingUser(RegisterDto dto) {
+        // Kiểm tra email tồn tại
+        if (userRepository.findByEmail(dto.getEmail().trim().toLowerCase()) != null ||
+                pendingUserRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email đã được sử dụng");
         }
-        return User.builder()
-                .email(dto.getEmail())
-                .password(passwordEncoder.encode(dto.getPassword()))
+
+        // Kiểm tra độ dài mật khẩu
+        if (dto.getPassword().length() < 8) {
+            throw new IllegalArgumentException("Mật khẩu phải từ 8 ký tự trở lên");
+        }
+
+        String verificationCode = RandomStringUtils.randomAlphanumeric(32);
+        PendingUser pendingUser = PendingUser.builder()
+                .email(dto.getEmail().trim().toLowerCase())
                 .name(dto.getName())
+                .password(passwordEncoder.encode(dto.getPassword()))
                 .cardId(dto.getCardId())
                 .phoneNumber(dto.getPhoneNumber())
                 .gender(dto.isGender())
                 .address(dto.getAddress())
                 .avatar(dto.getAvatar())
-                .status(true) // Mặc định active
-                .code(RandomStringUtils.randomAlphanumeric(5))
-                .role(role) // Gán role mặc định
+                .verificationCode(verificationCode)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusHours(24)) // Hết hạn sau 24 giờ
                 .build();
+
+        return pendingUserRepository.save(pendingUser);
+    }
+
+    public User verifyAndSaveUser(String verificationCode) {
+        PendingUser pendingUser = pendingUserRepository.findByVerificationCode(verificationCode)
+                .orElseThrow(() -> new IllegalArgumentException("Mã xác minh không hợp lệ"));
+
+        if (pendingUser.getExpiresAt().isBefore(LocalDateTime.now())) {
+            pendingUserRepository.delete(pendingUser);
+            throw new IllegalArgumentException("Mã xác minh đã hết hạn");
+        }
+
+        Role role = roleRepository.findByName("ROLE_USER");
+        if (role == null) {
+            role = new Role();
+            role.setName("ROLE_USER");
+            roleRepository.save(role);
+        }
+
+        User user = User.builder()
+                .email(pendingUser.getEmail())
+                .password(pendingUser.getPassword())
+                .name(pendingUser.getName())
+                .cardId(pendingUser.getCardId())
+                .phoneNumber(pendingUser.getPhoneNumber())
+                .gender(pendingUser.getGender())
+                .address(pendingUser.getAddress())
+                .avatar(pendingUser.getAvatar())
+                .status(true)
+                .code(RandomStringUtils.randomAlphanumeric(5))
+                .role(role)
+                .build();
+
+        User savedUser = userRepository.save(user);
+        pendingUserRepository.delete(pendingUser); // Xóa pending user
+        return savedUser;
     }
 
     public User convertToUser(AdminRegisterDto dto) {
-        String roleName = dto.getRole();
-        Role role = roleRepository.findByName(roleName);
+        Role role = roleRepository.findByName(dto.getRole());
         if (role == null) {
-            role = new Role();
-            role.setName(roleName);
-            roleRepository.save(role);
+            throw new IllegalArgumentException("Role không tồn tại: " + dto.getRole());
         }
+
         return User.builder()
-                .email(dto.getEmail())
-                .password(passwordEncoder.encode(dto.getPassword()))
+                .id(dto.getId())
+                .email(dto.getEmail().trim().toLowerCase())
                 .name(dto.getName())
                 .cardId(dto.getCardId())
                 .phoneNumber(dto.getPhoneNumber())
                 .gender(dto.isGender())
                 .address(dto.getAddress())
                 .avatar(dto.getAvatar())
-                .status(true) // Mặc định active
-                .code(RandomStringUtils.randomAlphanumeric(5))
-                .role(role) // Gán role mặc định
+                .role(role)
                 .build();
+    }
+
+    public User save(AdminRegisterDto dto) {
+        User existingUser = null;
+        if (dto.getId() != null) {
+            existingUser = userRepository.findById(dto.getId()).orElse(null);
+            if (existingUser == null) {
+                throw new IllegalArgumentException("Không tìm thấy người dùng với ID: " + dto.getId());
+            }
+        }
+
+        User user = convertToUser(dto);
+
+        if (dto.getId() == null) {
+            user.setStatus(true);
+            user.setCode(RandomStringUtils.randomAlphanumeric(5));
+        } else {
+            user.setStatus(existingUser.isStatus());
+            user.setCode(existingUser.getCode());
+        }
+
+        if (dto.getId() == null) {
+            if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
+                throw new IllegalArgumentException("Mật khẩu không được để trống khi thêm mới");
+            }
+            if (dto.getPassword().length() < 8) {
+                throw new IllegalArgumentException("Mật khẩu phải từ 8 ký tự trở lên");
+            }
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        } else {
+            if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+                user.setPassword(passwordEncoder.encode(dto.getPassword()));
+            } else {
+                user.setPassword(existingUser.getPassword());
+            }
+        }
+
+        return userRepository.save(user); // Không gửi email
+    }
+
+    public User save(User user) {
+        return userRepository.save(user);
     }
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
-    public void save(User user) {
-        userRepository.save(user);
-    }
+
     public List<User> findAllMembers() {
         return userRepository.findAll();
     }
+
     public User findById(Long id) {
-        return userRepository.getReferenceById(id);
+        Optional<User> user = userRepository.findById(id);
+        return user.orElse(null);
     }
+
     public void delete(User user) {
         userRepository.delete(user);
     }
