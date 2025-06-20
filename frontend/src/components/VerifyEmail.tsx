@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, CircularProgress, Button } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import API_URLS from '../config/api';
+import LanguageSwitcher from "./LanguageSwitcher.tsx";
 
 const VerifyEmail = () => {
     const { t, i18n } = useTranslation();
@@ -55,6 +56,9 @@ const VerifyEmail = () => {
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
             <Box sx={{ textAlign: 'center', width: 400 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                    <LanguageSwitcher />
+                </Box>
                 {loading && <CircularProgress />}
                 {message && (
                     <Typography color="success.main" variant="h6" sx={{ mb: 2 }}>
