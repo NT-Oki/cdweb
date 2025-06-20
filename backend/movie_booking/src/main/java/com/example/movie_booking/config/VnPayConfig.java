@@ -16,6 +16,7 @@ import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 @Configuration
 public class VnPayConfig {
@@ -81,7 +82,7 @@ public class VnPayConfig {
     // Phương thức tạo chuỗi truy vấn URL an toàn - giữ nguyên
     public String encodeUrl(String s) {
         try {
-            return URLEncoder.encode(s, StandardCharsets.US_ASCII.toString());
+            return URLEncoder.encode(s,StandardCharsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Encoding not supported", e);
         }
@@ -111,6 +112,8 @@ public class VnPayConfig {
             vnp_Params.put("vnp_TmnCode", tmnCode);
             vnp_Params.put("vnp_ReturnUrl", config.getVnPayReturnUrl()); // Lấy ReturnUrl từ config
             vnp_Params.put("vnp_IpAddr", "127.0.0.1"); // Hoặc lấy IP thực của người dùng
+            vnp_Params.put("vnp_CurrCode", "VND");
+
         }
 
         public Builder withTxnRef(String txnRef) {

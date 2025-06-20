@@ -33,9 +33,9 @@ interface ShowtimeSeatResponseDTO {
     description: string;
     price: number;
     status: number;
-    locked_by_user_id: Number;
-    lockedAt: string;
-    lockExpiresAt: string;
+    locked_by_user_id: Number|null;
+    lockedAt: string|null;
+    lockExpiresAt: string|null;
     bookingId: Number;
 }
 
@@ -143,8 +143,8 @@ export default function SeatSelector() {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<ChooseSeatResponseDTO>(API_URLS.BOOKING.GET_SEAT, {
-                params: { showtimeId: showtimeId },
+            const response = await axios.get(API_URLS.BOOKING.GET_SEAT, {
+                params: { showtimeId: Number(showtimeId) },
                 headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.language },
             });
             setShowtimeDetails(response.data.showtimeDetail);

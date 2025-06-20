@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -74,11 +75,16 @@ public class BookingService {
             if(showTimeSeat==null){
                 return null;
             }
+            showTimeSeat.setStatus(2);
+            showTimeSeat.setBookingId(booking.getId());
+            showTimeSeat.setLocked_by_user_id(booking.getUser().getId());
+            showTimeSeat.setLockedAt(LocalDateTime.now());
             Seat seat = showTimeSeat.getSeat();
             bookingSeat.setBooking(booking);
             bookingSeat.setSeat(seat);
             bookingSeat.setPrice(showTimeSeat.getPrice());
             seatList.add(bookingSeat);
+            showTimeSeatRepository.save(showTimeSeat);
         }
         bookingSeatRepository.deleteByBookingId(booking.getId());
         bookingSeatRepository.saveAll(seatList);

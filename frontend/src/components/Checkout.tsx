@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Typography, TextField, Button, Toolbar } from "@mui/material";
+import { Box, Typography, TextField, Button, Toolbar, Alert } from "@mui/material";
 import { useNavigate } from "react-router";
 import Header from "./Header";
 import axios from "axios";
@@ -24,29 +24,59 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const dataJson = sessionStorage.getItem("bookingCheckoutDto");
   const data: BookingCheckoutDto | null = dataJson ? JSON.parse(dataJson) : null;
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
 
+//  const getTicket = async () => {
+//   const request = {
+//     amount: data?.totalPrice,
+//     addInfo: "Thanh toán vé xem phim"
+//   };
+
+//   try {
+//     const res = await axios.post(
+//       API_URLS.BOOKING.CREATE_BOOKING_SUCCESSFUL(Number(data?.bookingId)),
+//       {},
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         }
+//       }
+//     );
+
+//     // Gửi bookingId sang trang "/ticket"
+//     navigate("/ticket", {
+//       state: { bookingId: res.data.id }
+//     });
+//   } catch (error) {
+//     console.error("Lỗi khi gửi thanh toán:", error);
+//   }
+// };
  const getTicket = async () => {
-  const request = {
-    amount: data?.totalPrice,
-    addInfo: "Thanh toán vé xem phim"
-  };
+
 
   try {
-    const res = await axios.post(
-      API_URLS.BOOKING.CREATE_BOOKING_SUCCESSFUL(Number(data?.bookingId)),
-      {},
+    const response = await axios.get(
+      API_URLS.PAYMENT.create_payment,
       {
+      params:{
+      amount:Number(data?.totalPrice),
+      bookingId:data?.bookingId
+      },
         headers: {
           Authorization: `Bearer ${token}`,
         }
       }
     );
-
-    // Gửi bookingId sang trang "/ticket"
-    navigate("/ticket", {
-      state: { bookingId: res.data.id }
-    });
+if (response.data.status === 'OK' && response.data.url) {
+        setMessage('Đang chuyển hướng đến trang thanh toán VNPAY...');
+        // Chuyển hướng người dùng đến URL của VNPAY
+        window.location.href = response.data.url;
+      } else {
+        setError(response.data.message || 'Có lỗi xảy ra khi tạo thanh toán.');
+      }
+     
   } catch (error) {
     console.error("Lỗi khi gửi thanh toán:", error);
   }
@@ -217,6 +247,9 @@ const CheckoutPage = () => {
 
         </Box>
       </Box>
+
+      {message && <Alert severity="info" sx={{ mt: 2 }}>{message}</Alert>}
+      {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
       <Footer></Footer>
     </Box>
   );

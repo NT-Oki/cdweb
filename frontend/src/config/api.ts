@@ -13,6 +13,7 @@ const ADMIN_SHOWTIMES_URL = `${ADMIN_URL}/showtimes`;
 const ADMIN_MOVIES_URL = `${ADMIN_URL}/movies`;
 const ADMIN_USER_URL = `${BASE_URL}/admin/users`;
 const ADMIN_BOOKING_URL = `${ADMIN_URL}/bookings`;
+const PAYMENT_URL = `${BOOKING_URL}/payment`;
 
 const API_URLS = {
   BOOKING: {
@@ -65,6 +66,9 @@ const API_URLS = {
     delete: (id: number) => `${ADMIN_USER_URL}/delete/${id}`,
     deleteMultiple: `${ADMIN_USER_URL}/delete-multiple`,
     detail: (id: number) => `${ADMIN_USER_URL}/detail/${id}`,
+  },
+  PAYMENT:{
+    create_payment:`${PAYMENT_URL}/create_payment`
   }
 };
 

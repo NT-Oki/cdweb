@@ -1,6 +1,7 @@
 package com.example.movie_booking.dto.booking;
 
 import com.example.movie_booking.model.ShowTimeSeat;
+import jakarta.validation.constraints.Null;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,7 +33,7 @@ public class ShowtimeSeatResponseDTO {
        this.description=seat.getSeat().getDescription();
        this.price=seat.getSeat().getPrice();
        this.status=seat.getStatus();
-       this.locked_by_user_id=seat.getLocked_by_user_id()==0?null:seat.getLocked_by_user_id();
+       this.locked_by_user_id=seat.getLocked_by_user_id()== null ?null:seat.getLocked_by_user_id();
        this.lockedAt=seat.getLockedAt();
        this.lockExpiresAt=seat.getLockExpiresAt();
        this.bookingId=seat.getBookingId();

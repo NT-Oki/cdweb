@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.Base64;
 import java.util.Locale;
 import java.util.HashMap;
@@ -59,6 +61,7 @@ public class BookingController {
      */
     @GetMapping("/seats")
     public ResponseEntity<?> getSeats(@RequestParam Long showtimeId, Locale locale) {
+        System.out.println("hiiiiiiiiiiii");
         try{
         ChooseSeatResponseDTO responseDTO=bookingService.getInformationForChooseSeat(showtimeId);
         Map<String, Object> map = new HashMap<>();

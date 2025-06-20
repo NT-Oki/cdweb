@@ -27,7 +27,8 @@ export default function Ticket() {
     const navigate = useNavigate();
       const location = useLocation();
       const[data,setData] = useState<BookingCheckoutDto|null>(null);
-  const bookingId = location.state?.bookingId;
+  const searchParams = new URLSearchParams(location.search);
+  const bookingId = searchParams.get('bookingId');
   const [qrUrl, setQrUrl] = useState<string | undefined>(undefined);
     useEffect(() => {
     const fetchQR = async () => {
@@ -35,7 +36,7 @@ export default function Ticket() {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          API_URLS.BOOKING.TICKET(bookingId),
+          API_URLS.BOOKING.TICKET(Number(bookingId)),
           {
             headers: {
               Authorization: `Bearer ${token}`,
