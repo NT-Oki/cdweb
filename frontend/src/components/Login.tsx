@@ -1,4 +1,3 @@
-// src/components/Login.tsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -129,6 +128,9 @@ const Login = () => {
           </Formik>
 
           <Typography variant="body2" sx={{ mt: 2 }}>
+            Quên mật khẩu? <a href="/forgot-password">Đặt lại mật khẩu</a>
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1 }}>
             Chưa có tài khoản? <a href="/register">Đăng ký ngay</a>
           </Typography>
         </Paper>

@@ -70,6 +70,11 @@ public class UserService {
             throw new IllegalArgumentException("Mã xác minh đã hết hạn");
         }
 
+        if (pendingUser.getPassword() == null) {
+            // Đây là mã dùng cho quên mật khẩu, không phải đăng ký
+            throw new IllegalArgumentException("Mã này không dùng để xác minh đăng ký");
+        }
+
         Role role = roleRepository.findByName("ROLE_USER");
         if (role == null) {
             role = new Role();
@@ -92,7 +97,66 @@ public class UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
-        pendingUserRepository.delete(pendingUser); // Xóa pending user
+        pendingUserRepository.delete(pendingUser);
+        return savedUser;
+    }
+
+    public String requestPasswordReset(String email) {
+        User user = userRepository.findByEmail(email.trim().toLowerCase());
+        if (user == null) {
+            throw new IllegalArgumentException("Email không tồn tại");
+        }
+        if (!user.isStatus()) {
+            throw new IllegalArgumentException("Tài khoản đã bị khóa");
+        }
+
+        pendingUserRepository.findByEmail(email).ifPresent(pendingUser -> {
+            if (pendingUser.getPassword() != null) {
+                throw new IllegalArgumentException("Email đang chờ xác minh đăng ký");
+            }
+            pendingUserRepository.delete(pendingUser);
+        });
+
+        String resetCode = RandomStringUtils.randomAlphanumeric(32);
+        PendingUser pendingUser = PendingUser.builder()
+                .email(email.trim().toLowerCase())
+                .name(user.getName())
+                .verificationCode(resetCode)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusHours(24))
+                .build();
+
+        pendingUserRepository.save(pendingUser);
+        return resetCode; // Trả về resetCode để gửi email
+    }
+
+    public User resetPassword(String resetCode, String newPassword) {
+        PendingUser pendingUser = pendingUserRepository.findByVerificationCode(resetCode)
+                .orElseThrow(() -> new IllegalArgumentException("Mã đặt lại mật khẩu không hợp lệ"));
+
+        if (pendingUser.getExpiresAt().isBefore(LocalDateTime.now())) {
+            pendingUserRepository.delete(pendingUser);
+            throw new IllegalArgumentException("Mã đặt lại mật khẩu đã hết hạn");
+        }
+
+        if (pendingUser.getPassword() != null) {
+            // Đây là mã dùng cho đăng ký, không phải reset
+            throw new IllegalArgumentException("Mã này không dùng để đặt lại mật khẩu");
+        }
+
+        User user = userRepository.findByEmail(pendingUser.getEmail());
+        if (user == null) {
+            pendingUserRepository.delete(pendingUser);
+            throw new IllegalArgumentException("Người dùng không tồn tại");
+        }
+
+        if (newPassword.length() < 8) {
+            throw new IllegalArgumentException("Mật khẩu mới phải từ 8 ký tự trở lên");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        User savedUser = userRepository.save(user);
+        pendingUserRepository.delete(pendingUser);
         return savedUser;
     }
 
