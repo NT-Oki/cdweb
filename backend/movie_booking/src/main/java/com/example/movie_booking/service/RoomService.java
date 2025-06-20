@@ -8,9 +8,10 @@ import com.example.movie_booking.repository.IRoomRepository;
 import com.example.movie_booking.repository.ISeatRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +19,12 @@ import java.util.List;
 public class RoomService {
     @Autowired
     IRoomRepository roomRepository;
+
     @Autowired
     ISeatRepository seatRepository;
+
+    @Autowired
+    MessageSource messageSource;
 
     public List<Room> getAllRooms() {
         return roomRepository.findAll();
@@ -63,10 +68,10 @@ public class RoomService {
      * @throws IllegalArgumentException Nếu số lượng ghế không hợp lệ.
      */
     @Transactional // Đảm bảo toàn bộ hoạt động là một giao dịch
-    public Room addRoom(RoomAddDTO dto) {
+    public Room addRoom(RoomAddDTO dto, Locale locale) {
         // Bước 1: Kiểm tra và lưu Room cơ bản
         if (dto.getQuantityNormalSeat() < 0 || dto.getQuantityCoupleSeat() < 0) {
-            throw new IllegalArgumentException("Quantity of seats cannot be negative.");
+            throw new IllegalArgumentException(messageSource.getMessage("room.seats.invalid", null, locale));
         }
 
         Room room = Room.builder()

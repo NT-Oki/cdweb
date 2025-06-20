@@ -5,39 +5,37 @@ import {
   Button,
   Typography,
   Paper,
-  FormControl,
-  InputLabel,
   Select,
   MenuItem,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import API_URLS from '../config/api';
 
-// Validation schema đồng bộ với RegisterDto
 const validationSchema = Yup.object({
   email: Yup.string()
-      .email('Email không hợp lệ')
-      .required('Email không được để trống'),
-  name: Yup.string()
-      .required('Họ tên không được để trống'),
+      .email('validation.email.invalid')
+      .required('validation.email.empty'),
+  name: Yup.string().required('validation.name.empty'),
   password: Yup.string()
-      .required('Mật khẩu không được để trống')
-      .min(8, 'Mật khẩu phải có ít nhất 8 ký tự'),
+      .required('validation.password.empty')
+      .min(8, 'validation.password.short'),
   confirmPassword: Yup.string()
-      .required('Vui lòng xác nhận lại mật khẩu')
-      .oneOf([Yup.ref('password')], 'Mật khẩu không tương ứng'),
+      .required('validation.confirmPassword.empty')
+      .oneOf([Yup.ref('password')], 'validation.password.mismatch'),
   cardId: Yup.string().nullable(),
   phoneNumber: Yup.string()
-      .required('Số điện thoại không được để trống')
-      .matches(/^0[0-9]{9}$/, 'Số điện thoại không hợp lệ (phải có 10 chữ số, bắt đầu bằng 0)'),
-  gender: Yup.boolean()
-      .required('Giới tính không được để trống'),
+      .required('validation.phone.empty')
+      .matches(/^0[0-9]{9}$/, 'validation.phone.invalid'),
+  gender: Yup.boolean().required('validation.gender.empty'),
   address: Yup.string().nullable(),
 });
 
 const Register = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [serverErrors, setServerErrors] = useState<{ [key: string]: string }>({});
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -53,16 +51,15 @@ const Register = () => {
     address: string;
   }) => {
     try {
-      console.log('Request body:', values);
       const response = await fetch(API_URLS.AUTH.register, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept-Language': i18n.language,
+        },
         body: JSON.stringify(values),
         credentials: 'include',
       });
-
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers.get('content-type'));
 
       const contentType = response.headers.get('content-type');
       let data;
@@ -77,29 +74,32 @@ const Register = () => {
       if (!response.ok) {
         if (data.email || data.name || data.password || data.confirmPassword || data.cardId || data.phoneNumber || data.gender || data.address) {
           setServerErrors({
-            email: data.email,
-            name: data.name,
-            password: data.password,
-            confirmPassword: data.confirmPassword,
-            cardId: data.cardId,
-            phoneNumber: data.phoneNumber,
-            gender: data.gender,
-            address: data.address,
-            message: data.error || 'Đăng ký thất bại',
+            email: t(data.email || ''),
+            name: t(data.name || ''),
+            password: t(data.password || ''),
+            confirmPassword: t(data.confirmPassword || ''),
+            cardId: t(data.cardId || ''),
+            phoneNumber: t(data.phoneNumber || ''),
+            gender: t(data.gender || ''),
+            address: t(data.address || ''),
+            message: t(data.error || 'auth.register.failed'),
           });
+          toast.error(t(data.error || 'auth.register.failed'));
         } else {
-          setServerErrors({ message: data.error || 'Đăng ký thất bại' });
+          setServerErrors({ message: t(data.error || 'auth.register.failed') });
+          toast.error(t(data.error || 'auth.register.failed'));
         }
         setSuccessMessage('');
         return;
       }
 
       setServerErrors({});
-      setSuccessMessage(data.message || 'Vui lòng kiểm tra email để xác minh tài khoản');
+      setSuccessMessage(t(data.message || 'auth.register.success'));
+      toast.success(t(data.message || 'auth.register.success'));
     } catch (error: any) {
-      console.error('Lỗi khi gọi API register:', error);
-      setServerErrors({ message: `Đã xảy ra lỗi: ${error.message || 'Kết nối thất bại'}` });
+      setServerErrors({ message: t('auth.register.failed') });
       setSuccessMessage('');
+      toast.error(t('auth.register.failed'));
     }
   };
 
@@ -107,7 +107,7 @@ const Register = () => {
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
         <Paper elevation={4} sx={{ padding: 4, width: 400 }}>
           <Typography variant="h5" fontWeight="bold" gutterBottom>
-            Đăng ký tài khoản
+            {t('auth.register.success').split(' ')[0]} {/* "Register" hoặc "Đăng ký" */}
           </Typography>
 
           {successMessage && (
@@ -141,71 +141,65 @@ const Register = () => {
                   <Field
                       as={TextField}
                       name="name"
-                      label="Họ tên"
+                      label={t('validation.name.empty')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
                       error={(touched.name && !!errors.name) || !!serverErrors.name}
-                      helperText={(touched.name && errors.name) || serverErrors.name}
+                      helperText={(touched.name && t(errors.name || '')) || serverErrors.name}
                   />
-
                   <Field
                       as={TextField}
                       name="email"
-                      label="Email"
+                      label={t('validation.email.empty')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
                       error={(touched.email && !!errors.email) || !!serverErrors.email}
-                      helperText={(touched.email && errors.email) || serverErrors.email}
+                      helperText={(touched.email && t(errors.email || '')) || serverErrors.email}
                   />
-
                   <Field
                       as={TextField}
                       name="password"
-                      label="Mật khẩu"
+                      label={t('validation.password.empty')}
                       type="password"
                       variant="outlined"
                       fullWidth
                       margin="normal"
                       error={(touched.password && !!errors.password) || !!serverErrors.password}
-                      helperText={(touched.password && errors.password) || serverErrors.password}
+                      helperText={(touched.password && t(errors.password || '')) || serverErrors.password}
                   />
-
                   <Field
                       as={TextField}
                       name="confirmPassword"
-                      label="Xác nhận mật khẩu"
+                      label={t('validation.confirmPassword.empty')}
                       type="password"
                       variant="outlined"
                       fullWidth
                       margin="normal"
                       error={(touched.confirmPassword && !!errors.confirmPassword) || !!serverErrors.confirmPassword}
-                      helperText={(touched.confirmPassword && errors.confirmPassword) || serverErrors.confirmPassword}
+                      helperText={(touched.confirmPassword && t(errors.confirmPassword || '')) || serverErrors.confirmPassword}
                   />
-
                   <Field
                       as={TextField}
                       name="cardId"
-                      label="Số CMND/CCCD"
+                      label={t('validation.cardId')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
                       error={(touched.cardId && !!errors.cardId) || !!serverErrors.cardId}
-                      helperText={(touched.cardId && errors.cardId) || serverErrors.cardId}
+                      helperText={(touched.cardId && t(errors.cardId || '')) || serverErrors.cardId}
                   />
-
                   <Field
                       as={TextField}
                       name="phoneNumber"
-                      label="Số điện thoại"
+                      label={t('validation.phone.empty')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
                       error={(touched.phoneNumber && !!errors.phoneNumber) || !!serverErrors.phoneNumber}
-                      helperText={(touched.phoneNumber && errors.phoneNumber) || serverErrors.phoneNumber}
+                      helperText={(touched.phoneNumber && t(errors.phoneNumber || '')) || serverErrors.phoneNumber}
                   />
-
                   <Field
                       name="gender"
                       as={Select}
@@ -214,26 +208,24 @@ const Register = () => {
                       sx={{ mt: 2, mb: 1 }}
                       error={(touched.gender && !!errors.gender) || !!serverErrors.gender}
                   >
-                    <MenuItem value="true">Nam</MenuItem>
-                    <MenuItem value="false">Nữ</MenuItem>
+                    <MenuItem value="true">{t('gender.male')}</MenuItem>
+                    <MenuItem value="false">{t('gender.female')}</MenuItem>
                   </Field>
                   {(touched.gender && errors.gender) || serverErrors.gender ? (
                       <Typography color="error" variant="caption" sx={{ ml: 1 }}>
-                        {(touched.gender && errors.gender) || serverErrors.gender}
+                        {(touched.gender && t(errors.gender || '')) || serverErrors.gender}
                       </Typography>
                   ) : null}
-
                   <Field
                       as={TextField}
                       name="address"
-                      label="Địa chỉ"
+                      label={t('validation.address')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
                       error={(touched.address && !!errors.address) || !!serverErrors.address}
-                      helperText={(touched.address && errors.address) || serverErrors.address}
+                      helperText={(touched.address && t(errors.address || '')) || serverErrors.address}
                   />
-
                   <Button
                       type="submit"
                       variant="contained"
@@ -241,16 +233,16 @@ const Register = () => {
                       fullWidth
                       size="large"
                       sx={{ mt: 2 }}
-                      disabled={!!successMessage} // Vô hiệu hóa nút sau khi đăng ký thành công
+                      disabled={!!successMessage}
                   >
-                    Đăng ký
+                    {t('auth.register.success')} {/* "Register successfully" hoặc "Đăng ký thành công" */}
                   </Button>
                 </Form>
             )}
           </Formik>
 
           <Typography variant="body2" sx={{ mt: 2 }}>
-            Đã có tài khoản? <a href="/login">Đăng nhập</a>
+            {t('auth.login.success').split(' ')[0]}? <a href="/login">{t('auth.login.success')}</a>
           </Typography>
         </Paper>
       </Box>
