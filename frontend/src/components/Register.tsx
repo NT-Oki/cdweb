@@ -107,7 +107,7 @@ const Register = () => {
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
         <Paper elevation={4} sx={{ padding: 4, width: 400 }}>
           <Typography variant="h5" fontWeight="bold" gutterBottom>
-            {t('auth.register.success').split(' ')[0]} {/* "Register" hoặc "Đăng ký" */}
+            {t('auth.register')} {/* "Register" hoặc "Đăng ký" */}
           </Typography>
 
           {successMessage && (
@@ -141,7 +141,7 @@ const Register = () => {
                   <Field
                       as={TextField}
                       name="name"
-                      label={t('validation.name.empty')}
+                      label={t('validation.name')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
@@ -151,7 +151,7 @@ const Register = () => {
                   <Field
                       as={TextField}
                       name="email"
-                      label={t('validation.email.empty')}
+                      label={t('validation.email')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
@@ -161,7 +161,7 @@ const Register = () => {
                   <Field
                       as={TextField}
                       name="password"
-                      label={t('validation.password.empty')}
+                      label={t('validation.password')}
                       type="password"
                       variant="outlined"
                       fullWidth
@@ -172,7 +172,7 @@ const Register = () => {
                   <Field
                       as={TextField}
                       name="confirmPassword"
-                      label={t('validation.confirmPassword.empty')}
+                      label={t('validation.confirmPassword')}
                       type="password"
                       variant="outlined"
                       fullWidth
@@ -193,7 +193,7 @@ const Register = () => {
                   <Field
                       as={TextField}
                       name="phoneNumber"
-                      label={t('validation.phone.empty')}
+                      label={t('validation.phone')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
@@ -235,14 +235,14 @@ const Register = () => {
                       sx={{ mt: 2 }}
                       disabled={!!successMessage}
                   >
-                    {t('auth.register.success')} {/* "Register successfully" hoặc "Đăng ký thành công" */}
+                    {t('auth.register')} {/* "Register" hoặc "Đăng ký" */}
                   </Button>
                 </Form>
             )}
           </Formik>
 
           <Typography variant="body2" sx={{ mt: 2 }}>
-            {t('auth.login.success').split(' ')[0]}? <a href="/login">{t('auth.login.success')}</a>
+            {t('auth.login')}? <a href="/login">{t('auth.login')}</a> {/* "Login" hoặc "Đăng nhập" */}
           </Typography>
         </Paper>
       </Box>

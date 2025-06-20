@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { Box, Typography, TextField, Button, Toolbar } from "@mui/material";
 import { useNavigate } from "react-router";
+import { useTranslation } from 'react-i18next';
 import Header from "./Header";
 import axios from "axios";
 import API_URLS from "../config/api";
 import Footer from "./Footer";
+
 interface BookingCheckoutDto {
   bookingId: number;
   userId: number;
@@ -17,208 +19,198 @@ interface BookingCheckoutDto {
   movieName: string;
   startTime: string;
   roomName: string;
-
 }
+
 const CheckoutPage = () => {
-  const token =localStorage.getItem("token");
+  const { t, i18n } = useTranslation();
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const dataJson = sessionStorage.getItem("bookingCheckoutDto");
   const data: BookingCheckoutDto | null = dataJson ? JSON.parse(dataJson) : null;
 
+  const getTicket = async () => {
+    const request = {
+      amount: data?.totalPrice,
+      addInfo: t('booking.payment.info'), // "Thanh toán vé xem phim" hoặc "Movie ticket payment"
+    };
 
- const getTicket = async () => {
-  const request = {
-    amount: data?.totalPrice,
-    addInfo: "Thanh toán vé xem phim"
+    try {
+      const res = await axios.post(
+          API_URLS.BOOKING.CREATE_BOOKING_SUCCESSFUL(Number(data?.bookingId)),
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Accept-Language': i18n.language,
+            },
+          }
+      );
+
+      // Gửi bookingId sang trang "/ticket"
+      navigate("/ticket", {
+        state: { bookingId: res.data.id },
+      });
+    } catch (error) {
+      console.error("Lỗi khi gửi thanh toán:", error);
+    }
   };
 
-  try {
-    const res = await axios.post(
-      API_URLS.BOOKING.CREATE_BOOKING_SUCCESSFUL(Number(data?.bookingId)),
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      }
-    );
-
-    // Gửi bookingId sang trang "/ticket"
-    navigate("/ticket", {
-      state: { bookingId: res.data.id }
-    });
-  } catch (error) {
-    console.error("Lỗi khi gửi thanh toán:", error);
-  }
-};
-
-
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-      }}
-    >
-      <Header />
-      <Toolbar />
-
-      <Box sx={{ p: 4, bgcolor: "#f9fafc", minHeight: "100vh" }}>
-        <Box
+      <Box
           sx={{
-            display: "flex",
-            flexDirection: "row",
-            maxWidth: 1200,
-            mx: "auto",
-            gap: 4,
-
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: '100vh',
           }}
-        >
-          {/* left===================================== */}
-          <Box
-            sx={{
-              flex: 2,
+      >
+        <Header />
+        <Toolbar />
 
-            }}
-          >
-            {/* Tóm tắt đơn hàng */}
-            <Box
-              sx={{ bgcolor: "white", borderRadius: 2, boxShadow: 1 }}
-            >
-              <Typography variant="h6" sx={{
-                mb: 2, fontWeight: "bold",
-                backgroundColor: "rgb(149, 170, 201)",
-                position: "relative",
-                width: "100%",
-                borderRadius: 2,
-                height: "50px",
+        <Box sx={{ p: 4, bgcolor: "#f9fafc", minHeight: "100vh" }}>
+          <Box
+              sx={{
                 display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
-
-              }}>
-                Tóm tắt đơn hàng
-              </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  mb: 1,
-                  textTransform: "uppercase",
-                  borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
-                  p: "0 12px 12px 12px"
-
-
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontWeight: "bold",
-                    color: "rgb(149, 170, 201)",
-                  }}
-                >Mô tả</Typography>
-                <Typography
-                  sx={{
-                    fontWeight: "bold",
-                    color: "rgb(149, 170, 201)",
-                  }}
-                >Số lượng</Typography>
-                <Typography
-                  sx={{
-                    fontWeight: "bold",
-                    color: "rgb(149, 170, 201)",
-                  }}
-                >Thành tiền</Typography>
-              </Box>
-              <Box
-                sx={{ display: "flex", justifyContent: "space-between", mb: 2, borderBottom: "1px solid rgba(0, 0, 0, 0.12)", p: 1 }}
-              >
-                <Typography>Ghế Đơn</Typography>
-                <Typography>{data?.quantityNormalSeat}</Typography>
-                <Typography>{data?.totalPriceNormalSeat} vnđ</Typography>
-              </Box>
-              <Box
-                sx={{ display: "flex", justifyContent: "space-between", mb: 2, borderBottom: "1px solid rgba(0, 0, 0, 0.12)", p: 1 }}
-              >
-                <Typography>Ghế Đôi</Typography>
-                <Typography>{data?.quantityCoupleSeat}</Typography>
-                <Typography>{data?.totalPriceCoupleSeat} vnđ</Typography>
-              </Box>
-              {/* <Box
-            sx={{ display: "flex", justifyContent: "space-between", mb: 2,borderBottom: "1px solid rgba(0, 0, 0, 0.12)",p:1 }}
+                flexDirection: "row",
+                maxWidth: 1200,
+                mx: "auto",
+                gap: 4,
+              }}
           >
-            <Typography>Phí tiện ích</Typography>
-            <Typography>2.500 đ</Typography>
-          </Box> */}
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, p: 1 }}>
-                <Typography fontWeight="bold">Tổng</Typography>
-                <Typography fontWeight="bold">{data?.totalPrice} vnđ</Typography>
+            {/* left===================================== */}
+            <Box sx={{ flex: 2 }}>
+              {/* Tóm tắt đơn hàng */}
+              <Box sx={{ bgcolor: "white", borderRadius: 2, boxShadow: 1 }}>
+                <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 2,
+                      fontWeight: "bold",
+                      backgroundColor: "rgb(149, 170, 201)",
+                      position: "relative",
+                      width: "100%",
+                      borderRadius: 2,
+                      height: "50px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                >
+                  {t('booking.summary')} {/* "Tóm tắt đơn hàng" hoặc "Order Summary" */}
+                </Typography>
+                <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                      textTransform: "uppercase",
+                      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                      p: "0 12px 12px 12px",
+                    }}
+                >
+                  <Typography
+                      sx={{
+                        fontWeight: "bold",
+                        color: "rgb(149, 170, 201)",
+                      }}
+                  >
+                    {t('booking.description')} {/* "Mô tả" hoặc "Description" */}
+                  </Typography>
+                  <Typography
+                      sx={{
+                        fontWeight: "bold",
+                        color: "rgb(149, 170, 201)",
+                      }}
+                  >
+                    {t('booking.quantity')} {/* "Số lượng" hoặc "Quantity" */}
+                  </Typography>
+                  <Typography
+                      sx={{
+                        fontWeight: "bold",
+                        color: "rgb(149, 170, 201)",
+                      }}
+                  >
+                    {t('booking.subtotal')} {/* "Thành tiền" hoặc "Subtotal" */}
+                  </Typography>
+                </Box>
+                <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 2,
+                      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                      p: 1,
+                    }}
+                >
+                  <Typography>{t('seat.normal')} {/* "Ghế Đơn" hoặc "Normal Seat" */}</Typography>
+                  <Typography>{data?.quantityNormalSeat}</Typography>
+                  <Typography>{data?.totalPriceNormalSeat.toLocaleString('vi-VN')} vnđ</Typography>
+                </Box>
+                <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 2,
+                      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                      p: 1,
+                    }}
+                >
+                  <Typography>{t('seat.couple')} {/* "Ghế Đôi" hoặc "Couple Seat" */}</Typography>
+                  <Typography>{data?.quantityCoupleSeat}</Typography>
+                  <Typography>{data?.totalPriceCoupleSeat.toLocaleString('vi-VN')} vnđ</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, p: 1 }}>
+                  <Typography fontWeight="bold">{t('total')} {/* "Tổng" hoặc "Total" */}</Typography>
+                  <Typography fontWeight="bold">{data?.totalPrice.toLocaleString('vi-VN')} vnđ</Typography>
+                </Box>
               </Box>
             </Box>
-
-          </Box>
-          {/* endleft------------------------------------- */}
-          <Box
-            sx={{
-              flex: 1
-            }}
-          >
-            {/* Thông tin vé */}
-            <Box
-              sx={{ bgcolor: "white", borderRadius: 2, p: 3, boxShadow: 1 }}
-            >
-              <Typography variant="body1">
-                <strong>{data?.movieName}</strong>
-              </Typography>
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                <strong>ThuThao Cinema</strong>
-              </Typography>
-              <Typography variant="body2">
-                Suất <strong>{data?.startTime.split(' ')[0]} {data?.startTime.split(' ')[1]}</strong>
-              </Typography>
-              <Typography variant="body2">
-                Phòng chiếu <strong>{data?.roomName}</strong>
-
-              </Typography>
-              <Typography variant="body2">
-                Ghế <strong>{data?.nameSeats.map((name: string) => name).join(", ")}</strong>
-              </Typography>
-
-              <Box sx={{ mt: 2 }}>
-                <Typography fontWeight="bold" variant="h6">
-                  Tổng đơn hàng: {data?.totalPrice}
+            {/* endleft------------------------------------- */}
+            <Box sx={{ flex: 1 }}>
+              {/* Thông tin vé */}
+              <Box sx={{ bgcolor: "white", borderRadius: 2, p: 3, boxShadow: 1 }}>
+                <Typography variant="body1">
+                  <strong>{data?.movieName}</strong>
                 </Typography>
-              </Box>
-
-              <Box sx={{ mt: 2 }}>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  <strong>{t('app.name')} {/* "ThuThao Cinema" hoặc "ThuThao Cinema" */}</strong>
+                </Typography>
                 <Typography variant="body2">
-                  Vé đã mua không thể đổi hoặc hoàn tiền. <br /> Mã vé sẽ được gửi
-                  <strong> 01 </strong> lần qua số điện thoại và email đã nhập. Vui
-                  lòng kiểm tra lại thông tin trước khi tiếp tục.
+                  {t('showtime')} <strong>{data?.startTime.split(' ')[0]} {data?.startTime.split(' ')[1]}</strong> {/* "Suất" hoặc "Showtime" */}
                 </Typography>
+                <Typography variant="body2">
+                  {t('room')} <strong>{data?.roomName}</strong> {/* "Phòng chiếu" hoặc "Room" */}
+                </Typography>
+                <Typography variant="body2">
+                  {t('seat.selected.label')} <strong>{data?.nameSeats.map((name: string) => name).join(", ")}</strong> {/* "Ghế" hoặc "Seats" */}
+                </Typography>
+
+                <Box sx={{ mt: 2 }}>
+                  <Typography fontWeight="bold" variant="h6">
+                    {t('booking.total')} {data?.totalPrice.toLocaleString('vi-VN')} {/* "Tổng đơn hàng" hoặc "Total Order" */}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body2">
+                    {t('booking.ticketPolicy')} {/* "Vé đã mua không thể đổi hoặc hoàn tiền..." */}
+                    <br />
+                    {t('booking.ticketSent')} <strong>01</strong> {t('booking.ticketSent2')} {/* "Mã vé sẽ được gửi..." */}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Xác nhận */}
+              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+                <Button variant="outlined">{t('back')} {/* "Quay lại" hoặc "Back" */}</Button>
+                <Button variant="contained" color="primary" onClick={getTicket}>
+                  {t('confirm')} {/* "Xác nhận" hoặc "Confirm" */}
+                </Button>
               </Box>
             </Box>
-
-
-
-            {/* Xác nhận */}
-            <Box
-              sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}
-            >
-              <Button variant="outlined">Quay lại</Button>
-              <Button variant="contained" color="primary"
-                onClick={getTicket}
-              >
-                Xác nhận
-              </Button>
-            </Box>
           </Box>
-
         </Box>
+        <Footer />
       </Box>
-      <Footer></Footer>
-    </Box>
   );
 };
 

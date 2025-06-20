@@ -72,7 +72,7 @@ const ResetPassword = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
             <Paper elevation={4} sx={{ padding: 4, width: 400 }}>
                 <Typography variant="h5" fontWeight="bold" gutterBottom>
-                    {t('auth.reset.success').split(' ')[0]} {/* "Reset Password" hoặc "Đặt lại mật khẩu" */}
+                    {t('auth.reset')} {/* "Reset Password" hoặc "Đặt lại mật khẩu" */}
                 </Typography>
 
                 {loading && <CircularProgress />}
@@ -126,7 +126,7 @@ const ResetPassword = () => {
                                     sx={{ mt: 2 }}
                                     disabled={!!successMessage}
                                 >
-                                    {t('auth.reset.success')} {/* "Reset Password successful" hoặc "Đặt lại mật khẩu thành công" */}
+                                    {t('auth.reset')} {/* "Reset Password" hoặc "Đặt lại mật khẩu" */}
                                 </Button>
                             </Form>
                         )}
@@ -134,7 +134,7 @@ const ResetPassword = () => {
                 )}
 
                 <Typography variant="body2" sx={{ mt: 2 }}>
-                    {t('auth.login.success').split(' ')[0]} <a href="/login">{t('auth.login.success')}</a>
+                    {t('auth.login')} <a href="/login">{t('auth.login')}</a> {/* "Login" hoặc "Đăng nhập" */}
                 </Typography>
             </Paper>
         </Box>

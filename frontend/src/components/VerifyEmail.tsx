@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, CircularProgress, Button } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import API_URLS from '../config/api';
 
 const VerifyEmail = () => {
+    const { t, i18n } = useTranslation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [message, setMessage] = useState<string>('');
@@ -13,14 +15,17 @@ const VerifyEmail = () => {
     useEffect(() => {
         const code = searchParams.get('code');
         if (!code) {
-            setError('Mã xác minh không hợp lệ');
+            setError(t('auth.verify.invalid'));
             setLoading(false);
             return;
         }
 
         fetch(`${API_URLS.AUTH.verifyEmail}?code=${code}`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept-Language': i18n.language,
+            },
             credentials: 'include',
         })
             .then(async (res) => {
@@ -30,22 +35,22 @@ const VerifyEmail = () => {
                     data = await res.json();
                 } else {
                     const text = await res.text();
-                    throw new Error(`Response không phải JSON: ${text}`);
+                    throw new Error(t('error.json', { message: text }));
                 }
 
                 if (!res.ok) {
-                    throw new Error(data.error || 'Xác minh thất bại');
+                    throw new Error(t(data.error || 'auth.verify.failed'));
                 }
 
-                setMessage(data.message || 'Xác minh email thành công. Bạn có thể đăng nhập ngay.');
+                setMessage(t(data.message || 'auth.verify.success'));
                 setLoading(false);
-                setTimeout(() => navigate('/login'), 3000); // Chuyển hướng sau 3 giây
+                setTimeout(() => navigate('/login'), 3000);
             })
             .catch((err) => {
-                setError(err.message || 'Lỗi kết nối');
+                setError(t(err.message || 'auth.verify.failed'));
                 setLoading(false);
             });
-    }, [searchParams, navigate]);
+    }, [searchParams, navigate, t, i18n.language]);
 
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
@@ -68,7 +73,7 @@ const VerifyEmail = () => {
                         onClick={() => navigate('/login')}
                         sx={{ mt: 2 }}
                     >
-                        Đi đến trang đăng nhập
+                        {t('auth.login')} {/* "Login" hoặc "Đăng nhập" */}
                     </Button>
                 )}
             </Box>
