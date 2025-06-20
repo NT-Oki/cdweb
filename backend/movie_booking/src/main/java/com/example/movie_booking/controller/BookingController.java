@@ -2,32 +2,15 @@ package com.example.movie_booking.controller;
 
 import com.example.movie_booking.dto.BookingDTO;
 import com.example.movie_booking.dto.booking.ChooseSeatResponseDTO;
-import com.example.movie_booking.dto.booking.SeatRequest;
-import com.example.movie_booking.dto.booking.SeatResponseDTO;
 import com.example.movie_booking.model.*;
 import com.example.movie_booking.service.BookingService;
-import com.example.movie_booking.service.BookingStatusService;
-import com.example.movie_booking.service.ShowTimeService;
-import com.example.movie_booking.service.UserService;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 
 @RestController
 @RequestMapping("/booking")

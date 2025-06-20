@@ -1,6 +1,5 @@
 package com.example.movie_booking.dto.booking;
 
-import com.example.movie_booking.model.Seat;
 import com.example.movie_booking.model.Showtime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,9 +16,9 @@ public class ChooseSeatResponseDTO {
     private String roomName;
     private String startTime;
     private String durationMovie;
-    private List<SeatResponseDTO> seats;
+    private List<ShowtimeSeatResponseDTO> seats;
 
-    public ChooseSeatResponseDTO(Showtime showtime, List<SeatResponseDTO> seats) {
+    public ChooseSeatResponseDTO(Showtime showtime, List<ShowtimeSeatResponseDTO> seats) {
         this.showtimeId = showtime.getId();
         this.movieName = showtime.getMovie().getNameMovie();
         this.roomName = showtime.getRoom().getRoomName();

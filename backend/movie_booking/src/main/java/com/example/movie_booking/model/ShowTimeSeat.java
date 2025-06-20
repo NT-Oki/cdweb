@@ -24,7 +24,8 @@ public class ShowTimeSeat {
     @JoinColumn(name = "seat_id", nullable = false)
     private Seat seat;
     @Column(nullable = true)
-    private long locked_by_user_id;
+
+    private Long locked_by_user_id;
     @Column(nullable = true)
     private LocalDateTime lockedAt;
     @Column(nullable = true)
