@@ -10,9 +10,10 @@ import com.example.movie_booking.repository.IRoleRepository;
 import com.example.movie_booking.repository.IUserRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import java.util.Locale;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -31,16 +32,19 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public PendingUser savePendingUser(RegisterDto dto) {
+    @Autowired
+    private MessageSource messageSource;
+
+    public PendingUser savePendingUser(RegisterDto dto, Locale locale) {
         // Kiểm tra email tồn tại
         if (userRepository.findByEmail(dto.getEmail().trim().toLowerCase()) != null ||
                 pendingUserRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email đã được sử dụng");
+            throw new IllegalArgumentException(messageSource.getMessage("user.email.exists", null, locale));
         }
 
         // Kiểm tra độ dài mật khẩu
         if (dto.getPassword().length() < 8) {
-            throw new IllegalArgumentException("Mật khẩu phải từ 8 ký tự trở lên");
+            throw new IllegalArgumentException(messageSource.getMessage("user.password.short", null, locale));
         }
 
         String verificationCode = RandomStringUtils.randomAlphanumeric(32);
@@ -61,18 +65,19 @@ public class UserService {
         return pendingUserRepository.save(pendingUser);
     }
 
-    public User verifyAndSaveUser(String verificationCode) {
+    public User verifyAndSaveUser(String verificationCode, Locale locale) {
         PendingUser pendingUser = pendingUserRepository.findByVerificationCode(verificationCode)
-                .orElseThrow(() -> new IllegalArgumentException("Mã xác minh không hợp lệ"));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        messageSource.getMessage("auth.verify.invalid", null, locale)));
 
         if (pendingUser.getExpiresAt().isBefore(LocalDateTime.now())) {
             pendingUserRepository.delete(pendingUser);
-            throw new IllegalArgumentException("Mã xác minh đã hết hạn");
+            throw new IllegalArgumentException(messageSource.getMessage("auth.verify.expired", null, locale));
         }
 
         if (pendingUser.getPassword() == null) {
             // Đây là mã dùng cho quên mật khẩu, không phải đăng ký
-            throw new IllegalArgumentException("Mã này không dùng để xác minh đăng ký");
+            throw new IllegalArgumentException(messageSource.getMessage("auth.verify.notforregister", null, locale));
         }
 
         Role role = roleRepository.findByName("ROLE_USER");
@@ -101,18 +106,18 @@ public class UserService {
         return savedUser;
     }
 
-    public String requestPasswordReset(String email) {
+    public String requestPasswordReset(String email, Locale locale) {
         User user = userRepository.findByEmail(email.trim().toLowerCase());
         if (user == null) {
-            throw new IllegalArgumentException("Email không tồn tại");
+            throw new IllegalArgumentException(messageSource.getMessage("auth.forgot.notfound", null, locale));
         }
         if (!user.isStatus()) {
-            throw new IllegalArgumentException("Tài khoản đã bị khóa");
+            throw new IllegalArgumentException(messageSource.getMessage("auth.forgot.locked", null, locale));
         }
 
         pendingUserRepository.findByEmail(email).ifPresent(pendingUser -> {
             if (pendingUser.getPassword() != null) {
-                throw new IllegalArgumentException("Email đang chờ xác minh đăng ký");
+                throw new IllegalArgumentException(messageSource.getMessage("auth.forgot.pending", null, locale));
             }
             pendingUserRepository.delete(pendingUser);
         });
@@ -130,28 +135,29 @@ public class UserService {
         return resetCode; // Trả về resetCode để gửi email
     }
 
-    public User resetPassword(String resetCode, String newPassword) {
+    public User resetPassword(String resetCode, String newPassword, Locale locale) {
         PendingUser pendingUser = pendingUserRepository.findByVerificationCode(resetCode)
-                .orElseThrow(() -> new IllegalArgumentException("Mã đặt lại mật khẩu không hợp lệ"));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        messageSource.getMessage("auth.reset.code.invalid", null, locale)));
 
         if (pendingUser.getExpiresAt().isBefore(LocalDateTime.now())) {
             pendingUserRepository.delete(pendingUser);
-            throw new IllegalArgumentException("Mã đặt lại mật khẩu đã hết hạn");
+            throw new IllegalArgumentException(messageSource.getMessage("auth.reset.code.expired", null, locale));
         }
 
         if (pendingUser.getPassword() != null) {
             // Đây là mã dùng cho đăng ký, không phải reset
-            throw new IllegalArgumentException("Mã này không dùng để đặt lại mật khẩu");
+            throw new IllegalArgumentException(messageSource.getMessage("auth.reset.code.notforreset", null, locale));
         }
 
         User user = userRepository.findByEmail(pendingUser.getEmail());
         if (user == null) {
             pendingUserRepository.delete(pendingUser);
-            throw new IllegalArgumentException("Người dùng không tồn tại");
+            throw new IllegalArgumentException(messageSource.getMessage("user.notfound", null, locale));
         }
 
         if (newPassword.length() < 8) {
-            throw new IllegalArgumentException("Mật khẩu mới phải từ 8 ký tự trở lên");
+            throw new IllegalArgumentException(messageSource.getMessage("auth.reset.password.short", null, locale));
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -160,10 +166,11 @@ public class UserService {
         return savedUser;
     }
 
-    public User convertToUser(AdminRegisterDto dto) {
+    public User convertToUser(AdminRegisterDto dto, Locale locale) {
         Role role = roleRepository.findByName(dto.getRole());
         if (role == null) {
-            throw new IllegalArgumentException("Role không tồn tại: " + dto.getRole());
+            throw new IllegalArgumentException(messageSource.getMessage("user.role.invalid",
+                    new Object[]{dto.getRole()}, locale));
         }
 
         return User.builder()
@@ -179,16 +186,17 @@ public class UserService {
                 .build();
     }
 
-    public User save(AdminRegisterDto dto) {
+    public User save(AdminRegisterDto dto, Locale locale) {
         User existingUser = null;
         if (dto.getId() != null) {
             existingUser = userRepository.findById(dto.getId()).orElse(null);
             if (existingUser == null) {
-                throw new IllegalArgumentException("Không tìm thấy người dùng với ID: " + dto.getId());
+                throw new IllegalArgumentException(messageSource.getMessage("user.id.notfound",
+                        new Object[]{dto.getId()}, locale));
             }
         }
 
-        User user = convertToUser(dto);
+        User user = convertToUser(dto, locale);
 
         if (dto.getId() == null) {
             user.setStatus(true);
@@ -200,10 +208,10 @@ public class UserService {
 
         if (dto.getId() == null) {
             if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
-                throw new IllegalArgumentException("Mật khẩu không được để trống khi thêm mới");
+                throw new IllegalArgumentException(messageSource.getMessage("user.password.empty", null, locale));
             }
             if (dto.getPassword().length() < 8) {
-                throw new IllegalArgumentException("Mật khẩu phải từ 8 ký tự trở lên");
+                throw new IllegalArgumentException(messageSource.getMessage("user.password.short", null, locale));
             }
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         } else {
@@ -214,10 +222,6 @@ public class UserService {
             }
         }
 
-        return userRepository.save(user); // Không gửi email
-    }
-
-    public User save(User user) {
         return userRepository.save(user);
     }
 

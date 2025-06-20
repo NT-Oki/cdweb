@@ -9,13 +9,14 @@ import com.example.movie_booking.repository.ISeatRepository;
 import com.example.movie_booking.repository.IShowTimeSeatRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
-
+import java.util.Locale;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -24,8 +25,12 @@ import java.util.concurrent.*;
 public class ShowTimeSeatService {
     @Autowired
     IShowTimeSeatRepository showTimeSeatRepository;
+
     @Autowired
     SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    MessageSource messageSource;
         // Giả sử có một lớp SeatRequest và SeatStatusUpdate DTO
         // public class SeatRequest { private Long showtimeId; private Long seatId; private Long userId; }
         // public class SeatStatusUpdate { private Long seatId; private String newStatus; private Long userId; }
@@ -48,7 +53,7 @@ public class ShowTimeSeatService {
 
         @MessageMapping("/selectSeat") // Client gửi tin nhắn đến /app/selectSeat
         @Transactional // Đảm bảo giao dịch database
-        public void selectSeat(@Payload SeatRequest request) {
+        public void selectSeat(@Payload SeatRequest request, Locale locale) {
             Long showtimeId = request.getShowtimeId();
             Long showtimeSeatId = request.getShowtimeSeatId();
             Long userId = request.getUserId(); // ID của người dùng thực hiện chọn ghế
@@ -59,7 +64,7 @@ public class ShowTimeSeatService {
             if (showTimeSeat==null) {
                 // Ghế không tồn tại, thông báo lỗi cho người dùng cụ thể
                 messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/errors",
-                        "Seat " + showtimeSeatId + " does not exist.");
+                        messageSource.getMessage("seat.notfound", new Object[]{showtimeSeatId}, locale));
                 return;
             }
 
@@ -80,7 +85,7 @@ public class ShowTimeSeatService {
 
                 // Lên lịch giải phóng khóa tự động
                 ScheduledFuture<?> future = scheduler.schedule(() -> {
-                    releaseSeatLock(showtimeId, showtimeSeatId, userId); // Giải phóng khóa nếu hết thời gian
+                    releaseSeatLock(showtimeId, showtimeSeatId, userId, locale); // Giải phóng khóa nếu hết thời gian
                     seatLockFutures.remove(lockKey); // Xóa khỏi map sau khi tác vụ hoàn thành
                 }, 5, TimeUnit.MINUTES);
                 seatLockFutures.put(lockKey, future);
@@ -91,7 +96,7 @@ public class ShowTimeSeatService {
 
                 // Thông báo thành công cho người dùng đã chọn ghế
                 messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/seat-selection-success",
-                        "Seat " + showtimeSeatId + " locked successfully.");
+                        messageSource.getMessage("seat.lock.success", new Object[]{showtimeSeatId}, locale));
 
             } else if (showTimeSeat.getStatus()==2 && showTimeSeat.getLocked_by_user_id()==userId) {
                 // Người dùng chọn lại ghế của chính họ: mở khóa ghế, trả về status 0
@@ -103,26 +108,26 @@ public class ShowTimeSeatService {
 
                 // Có thể gửi lại trạng thái cập nhật cho chính user đó nếu cần
                 messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/seat-selection-success",
-                        "Seat " + showtimeSeatId + " mở khoas ghế ");
+                        messageSource.getMessage("seat.unlock.success", new Object[]{showtimeSeatId}, locale));
 
             } else {
                 // Ghế đã LOCKED bởi người khác hoặc SOLD
                 messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/errors",
-                        "Seat " + showtimeSeatId + " is not available.");
+                        messageSource.getMessage("seat.locked", new Object[]{showtimeSeatId}, locale));
             }
         }
         @MessageMapping("/releaseSeat") // Client gửi tin nhắn đến /app/releaseSeat
         @Transactional
-        public void releaseSeat(@Payload SeatRequest request) {
+        public void releaseSeat(@Payload SeatRequest request, Locale locale) {
             Long showtimeId = request.getShowtimeId();
             Long showtimeSeatId = request.getShowtimeSeatId();
             Long userId = request.getUserId();
 
-            releaseSeatLock(showtimeId, showtimeSeatId, userId);
+            releaseSeatLock(showtimeId, showtimeSeatId, userId, locale);
         }
 
         // Phương thức nội bộ để giải phóng khóa ghế
-        private void releaseSeatLock(Long showtimeId, Long seatId, Long userId) {
+        private void releaseSeatLock(Long showtimeId, Long seatId, Long userId, Locale locale) {
             ShowTimeSeat showTimeSeat=showTimeSeatRepository.findById(seatId).orElse(null);
             if (showTimeSeat!=null) {
                 // Chỉ giải phóng nếu nó đang bị khóa bởi người dùng này

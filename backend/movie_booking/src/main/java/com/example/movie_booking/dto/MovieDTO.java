@@ -12,7 +12,7 @@ public class MovieDTO {
 
     private Long id;
 
-    @NotBlank(message = "Tên phim không được để trống")
+    @NotBlank(message = "validation.movie.name.empty")
     private String nameMovie;
 
     private String releaseDate;

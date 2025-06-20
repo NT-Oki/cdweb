@@ -5,10 +5,11 @@ import com.example.movie_booking.dto.booking.ChooseSeatResponseDTO;
 import com.example.movie_booking.model.*;
 import com.example.movie_booking.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Locale;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +19,9 @@ public class BookingController {
     @Autowired
     BookingService bookingService;
 
+    @Autowired
+    private MessageSource messageSource;
+
     /**
      * Buoc 1
      * tạo 1 booking mới chứa (showtime,trạng thai(1)
@@ -25,7 +29,7 @@ public class BookingController {
      * @return
      */
     @PostMapping("/show-time")
-    public ResponseEntity<?> booking(@RequestBody BookingDTO dto) {//userId, showtimeId
+    public ResponseEntity<?> booking(@RequestBody BookingDTO dto, Locale locale) {//userId, showtimeId
         try {
             Booking booking = bookingService.createBooking(dto);
             Map<String, Object> map = new HashMap<>();
@@ -34,7 +38,8 @@ public class BookingController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Đặt vé thất bại: " + e.getMessage()));
+                    .body(Map.of("error",
+                            messageSource.getMessage("booking.create.failed", new Object[]{e.getMessage()}, locale)));
         }
     }
 
@@ -45,26 +50,28 @@ public class BookingController {
      * @return
      */
     @GetMapping("/seats")
-    public ResponseEntity<?> getSeats(@RequestParam Long showtimeId) {
+    public ResponseEntity<?> getSeats(@RequestParam Long showtimeId, Locale locale) {
         try{
         ChooseSeatResponseDTO responseDTO=bookingService.getInformationForChooseSeat(showtimeId);
         Map<String, Object> map = new HashMap<>();
         map.put("showtimeDetail", responseDTO);
         return ResponseEntity.ok(map);
         } catch(Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error",
+                    messageSource.getMessage("booking.seats.get.failed", new Object[]{e.getMessage()}, locale)));
         }
     }
 
     @PostMapping("/choose-seat")
-    public ResponseEntity<?> chooseSeats(@RequestBody BookingDTO dto) {//bookingId, seats :[1,2,3]
+    public ResponseEntity<?> chooseSeats(@RequestBody BookingDTO dto, Locale locale) {//bookingId, seats :[1,2,3]
         try{
         Booking booking = bookingService.addSeats(dto);
         booking=bookingService.updateTotalAmount(dto.getBookingId());
             System.out.println(booking.getTotalAmount());
         return ResponseEntity.ok(booking);
         }catch (Exception e){
-            return ResponseEntity.badRequest().body("Chọn ghế thất bại"+ e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error",
+                    messageSource.getMessage("booking.seats.failed", new Object[]{e.getMessage()}, locale)));
         }
     }
 }

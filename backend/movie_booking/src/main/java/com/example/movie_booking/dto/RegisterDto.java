@@ -11,24 +11,24 @@ import lombok.Setter;
 @Setter
 public class RegisterDto {
 
-    @NotBlank(message = "Email không được để trống")
-    @Email(message = "Email không hợp lệ")
+    @NotBlank(message = "validation.email.empty")
+    @Email(message = "validation.email.invalid")
     private String email;
 
-    @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 8, message = "Mật khẩu phải có ít nhất 8 ký tự")
+    @NotBlank(message = "validation.password.empty")
+    @Size(min = 8, message = "validation.password.short")
     private String password;
 
-    @NotBlank(message = "Vui lòng xác nhận lại mật khẩu")
+    @NotBlank(message = "validation.confirmPassword")
     private String confirmPassword;
 
-    @NotBlank(message = "Họ tên không được để trống")
+    @NotBlank(message = "validation.name.empty")
     private String name;
 
     private String cardId;
 
-    @Pattern(regexp = "^(0[0-9]{9})$", message = "Số điện thoại không hợp lệ (phải có 10 chữ số, bắt đầu bằng 0)")
-    @NotBlank(message = "Số điện thoại không được để trống")
+    @Pattern(regexp = "^(0[0-9]{9})$", message = "validation.phone.invalid")
+    @NotBlank(message = "validation.phone.empty")
     private String phoneNumber;
 
     private boolean gender; // true = nam, false = nữ

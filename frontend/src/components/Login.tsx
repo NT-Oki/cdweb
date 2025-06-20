@@ -12,19 +12,22 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import API_URLS, { apiRequest } from '../config/api';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
+import API_URLS from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const validationSchema = Yup.object({
   email: Yup.string()
-      .email('Email không hợp lệ')
-      .required('Email không được để trống'),
+      .email('validation.email.invalid')
+      .required('validation.email.empty'),
   password: Yup.string()
-      .required('Mật khẩu không được để trống')
-      .min(8, 'Mật khẩu phải có ít nhất 8 ký tự'),
+      .required('validation.password.empty')
+      .min(8, 'validation.password.short'),
 });
 
 const Login = () => {
+  const { t, i18n } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [showPass, setShowPass] = useState(false);
@@ -33,16 +36,25 @@ const Login = () => {
   const handleLogin = async (values: { email: string; password: string }) => {
     try {
       setServerErrors({});
-      const data = await apiRequest(API_URLS.AUTH.login, {
+      const response = await fetch(API_URLS.AUTH.login, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept-Language': i18n.language,
+        },
         body: JSON.stringify(values),
+        credentials: 'include',
       });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setServerErrors({ message: t(data.error || 'auth.login.failed') });
+        toast.error(t(data.error || 'auth.login.failed'));
+        return;
+      }
 
       const rawRole = data.role;
       const mappedRole = rawRole === 'ROLE_ADMIN' ? 'admin' : 'user';
-
-      console.log('API response:', data);
-      console.log('User trước khi login:', { email: data.email, name: data.name, role: mappedRole });
 
       login(
           {
@@ -54,12 +66,11 @@ const Login = () => {
           },
           data.token
       );
-      alert('Đăng nhập thành công!');
-      console.log('Chuyển hướng sau đăng nhập:', mappedRole === 'admin' ? '/admin/dashboard' : '/');
+      toast.success(t('auth.login.success'));
       navigate(mappedRole === 'admin' ? '/admin/dashboard' : '/', { replace: true });
     } catch (error: any) {
-      console.error('Lỗi khi gọi API login:', error);
-      setServerErrors({ message: error.message || 'Đăng nhập thất bại' });
+      setServerErrors({ message: t('auth.login.failed') });
+      toast.error(t('auth.login.failed'));
     }
   };
 
@@ -67,7 +78,7 @@ const Login = () => {
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
         <Paper elevation={4} sx={{ padding: 4, width: 400 }}>
           <Typography variant="h5" fontWeight="bold" gutterBottom>
-            Đăng nhập tài khoản
+            {t('auth.login.success').split(' ')[0]} {/* "Login" hoặc "Đăng nhập" */}
           </Typography>
 
           {serverErrors.message && (
@@ -86,23 +97,23 @@ const Login = () => {
                   <Field
                       as={TextField}
                       name="email"
-                      label="Email"
+                      label={t('validation.email.empty')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
                       error={(touched.email && !!errors.email) || !!serverErrors.message}
-                      helperText={(touched.email && errors.email) || serverErrors.message}
+                      helperText={(touched.email && t(errors.email || '')) || serverErrors.message}
                   />
                   <Field
                       as={TextField}
                       name="password"
-                      label="Mật khẩu"
+                      label={t('validation.password.empty')}
                       variant="outlined"
                       fullWidth
                       margin="normal"
                       type={showPass ? 'text' : 'password'}
                       error={(touched.password && !!errors.password) || !!serverErrors.message}
-                      helperText={(touched.password && errors.password) || serverErrors.message}
+                      helperText={(touched.password && t(errors.password || '')) || serverErrors.message}
                       InputProps={{
                         endAdornment: (
                             <InputAdornment position="end">
@@ -121,17 +132,17 @@ const Login = () => {
                       size="large"
                       sx={{ mt: 2 }}
                   >
-                    Đăng nhập
+                    {t('auth.login.success')} {/* "Login successful" hoặc "Đăng nhập thành công" */}
                   </Button>
                 </Form>
             )}
           </Formik>
 
           <Typography variant="body2" sx={{ mt: 2 }}>
-            Quên mật khẩu? <a href="/forgot-password">Đặt lại mật khẩu</a>
+            {t('auth.forgot.success').split(' ')[0]}? <a href="/forgot-password">{t('auth.forgot.success')}</a>
           </Typography>
           <Typography variant="body2" sx={{ mt: 1 }}>
-            Chưa có tài khoản? <a href="/register">Đăng ký ngay</a>
+            {t('auth.register.success').split(' ')[0]}? <a href="/register">{t('auth.register.success')}</a>
           </Typography>
         </Paper>
       </Box>

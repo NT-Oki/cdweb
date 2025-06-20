@@ -1,13 +1,12 @@
 // import 'src/global.css';
 
 import React, { useEffect } from 'react';
-
 import Fab from '@mui/material/Fab';
-
+import { ToastContainer } from 'react-toastify';
 import { usePathname } from './components/routes/hooks';
-
+import 'react-toastify/dist/ReactToastify.css';
 import { ThemeProvider } from './components/admin/theme/theme-provider';
-
+import LanguageSwitcher from './components/LanguageSwitcher';
 import { Iconify } from './components/admin/components/iconify';
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -58,6 +57,8 @@ export default function App({ children }: AppProps) {
         <ThemeProvider>
             <ErrorBoundary>
                 <AuthProvider>
+                    <ToastContainer />
+                    <LanguageSwitcher />
                     {children}
                     {githubButton()}
                 </AuthProvider>
