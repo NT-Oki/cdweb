@@ -2,7 +2,7 @@ package com.example.movie_booking.service;
 
 import com.example.movie_booking.dto.BookingDTO;
 import com.example.movie_booking.dto.booking.ChooseSeatResponseDTO;
-import com.example.movie_booking.dto.booking.SeatResponseDTO;
+import com.example.movie_booking.dto.booking.ShowtimeSeatResponseDTO;
 import com.example.movie_booking.model.*;
 import com.example.movie_booking.repository.*;
 import jakarta.transaction.Transactional;
@@ -27,6 +27,8 @@ public class BookingService {
     IBookingSeatRepository bookingSeatRepository;
     @Autowired
     ISeatRepository seatRepository;
+    @Autowired
+    IShowTimeSeatRepository showTimeSeatRepository;
 
     public Booking save(Booking booking) {
         return bookingRepository.save(booking);
@@ -80,12 +82,12 @@ public class BookingService {
         if(showtime==null){
             return null;
         }
-        List<Seat> seatList=seatRepository.findByRoomId(showtime.getRoom().getId());
-        List<SeatResponseDTO> seatResponseDTOS=new ArrayList<>();
-        for(Seat seat:seatList){
-            seatResponseDTOS.add(new SeatResponseDTO(seat));
+        List<ShowTimeSeat> showTimeSeats=showTimeSeatRepository.findByShowtimeId(showtimeId);
+        List<ShowtimeSeatResponseDTO> showtimeSeatResponseDTOS=new ArrayList<>();
+        for(ShowTimeSeat showTimeSeat:showTimeSeats){
+            showtimeSeatResponseDTOS.add(new ShowtimeSeatResponseDTO(showTimeSeat ));
         }
-        ChooseSeatResponseDTO responseDTO=new ChooseSeatResponseDTO(showtime,seatResponseDTOS);
+        ChooseSeatResponseDTO responseDTO=new ChooseSeatResponseDTO(showtime,showtimeSeatResponseDTOS);
         return responseDTO;
     }
 

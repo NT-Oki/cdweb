@@ -110,6 +110,7 @@ public List<Showtime> getShowTimeByMovieId(long movieId) {
                     .seat(physicalSeat)
                     .status(0) // Trạng thái ban đầu là AVAILABLE
                     .price(physicalSeat.getPrice()) // Lấy giá từ ghế làm giá mặc định
+                    .locked_by_user_id(null)
                     .build();
             showtimeSeatsToCreate.add(showtimeSeat);
         }

@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class SeatRequest {
      private Long showtimeId;
-     private Long seatId;
+     private Long showtimeSeatId;
      private Long userId;
 }

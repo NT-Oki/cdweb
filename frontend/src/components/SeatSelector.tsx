@@ -25,12 +25,18 @@ import Footer from './Footer';
 import API_URLS from '../config/api';
 
 // --- Interfaces (Đảm bảo khớp với Response từ Backend) ---
-interface SeatResponseDTO {
-    id: number;
+interface ShowtimeSeatResponseDTO {
+    showtimeSeatId: number;
     seatNumber: string;
+    seatRow: string;
+    seatColumn: number;
     description: string;
     price: number;
-    status: number; // 0: Available, 2: Booked/Blocked
+    status: number; // 0: Available, 1: selected by current user, 2: Booked/Blocked
+    locked_by_user_id: Number;
+    lockedAt: string;
+    lockExpiresAt: string;
+    bookingId: Number;
 }
 
 interface ShowtimeDetail {
@@ -39,17 +45,15 @@ interface ShowtimeDetail {
     roomName: string;
     startTime: string; // "HH:mm dd/MM/yyyy"
     durationMovie: string;
-    seats: SeatResponseDTO[];
+    seats: ShowtimeSeatResponseDTO[];
 }
 
 interface ChooseSeatResponseDTO {
     showtimeDetail: ShowtimeDetail;
 }
 
-// Interface mở rộng cho ghế khi hiển thị ở frontend (có thêm row/column và isCoupleSeat sau khi xử lý)
-interface DisplaySeatInfo extends SeatResponseDTO {
-    rowNumber: string;
-    columnNumber: string;
+// Interface mở rộng cho ghế khi hiển thị ở frontend (có thêm isCoupleSeat sau khi xử lý)
+interface DisplaySeatInfo extends ShowtimeSeatResponseDTO {
     isCoupleSeat: boolean; // THÊM: Biến này để xác định ghế đôi
 }
 
@@ -82,7 +86,7 @@ const StyledSeat = styled(Box)<{ seatStatus: number; isSelected: boolean; isCoup
             borderColor: isSelected
                 ? theme.palette.info.dark
                 : theme.palette.warning.dark,
-            marginRight: theme.spacing(0.5), // Khoảng cách giữa các ghế đôi
+            marginRight: theme.spacing(0.5), // Khoảng cách giữa các ghế đôi (chỉ ảnh hưởng đến layout flex)
         }),
 
         // Màu nền chung, sẽ bị ghi đè nếu là ghế đôi hoặc đang chọn
@@ -116,7 +120,7 @@ const StyledSeat = styled(Box)<{ seatStatus: number; isSelected: boolean; isCoup
 // --- Component Ghế con ---
 const Seat = ({ seat, onClick, isSelected }: { seat: DisplaySeatInfo; onClick: () => void; isSelected: boolean }) => (
     <StyledSeat seatStatus={seat.status} isSelected={isSelected} isCoupleSeat={seat.isCoupleSeat} onClick={onClick}>
-        <Typography variant="caption">{seat.columnNumber}</Typography>
+        <Typography variant="caption">{seat.seatColumn}</Typography> {/* Hiển thị số cột */}
         {/* THÊM: Hiển thị label "Đôi" cho ghế đôi */}
         {seat.isCoupleSeat && (
             <Typography variant="caption" sx={{ fontSize: '0.65rem', mt: 0.5, fontWeight: 'normal' }}>
@@ -131,50 +135,82 @@ export default function SeatSelector() {
     const { showtimeId, bookingId, movieId } = useParams();
     const navigate = useNavigate();
     const [showtimeDetails, setShowtimeDetails] = useState<ShowtimeDetail | null>(null);
-    const [selectedSeats, setSelectedSeats] = useState<SeatResponseDTO[]>([]);
+    // Sử dụng ShowtimeSeatResponseDTO cho selectedSeats để nhất quán với backend
+    const [selectedSeats, setSelectedSeats] = useState<ShowtimeSeatResponseDTO[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [bookingError, setBookingError] = useState<string | null>(null);
     const token = localStorage.getItem("token");
 
-        // State cho bộ đếm ngược (thời gian còn lại tính bằng giây)
+    // State cho ghế được nhóm theo hàng để hiển thị
+    const [seatsGroupedByRow, setSeatsGroupedByRow] = useState<Record<string, DisplaySeatInfo[]>>({});
+    const [orderedRowKeys, setOrderedRowKeys] = useState<string[]>([]);
+
+    // State cho bộ đếm ngược (thời gian còn lại tính bằng giây)
     const [timeLeft, setTimeLeft] = useState<number>(60); // 10 phút = 600 giây
     const timerRef = useRef<number | null>(null); // Để lưu trữ ID của setInterval cho timer
-    const [openTimeoutDialog, setOpenTimeoutDialog] = useState<boolean>(false); 
+    const [openTimeoutDialog, setOpenTimeoutDialog] = useState<boolean>(false);
 
- 
-        const fetchShowtimeDetails = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await axios.get<ChooseSeatResponseDTO>(API_URLS.BOOKING.GET_SEAT, {
-                    params: {
-                        showtimeId: showtimeId,
-                    },
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    }
-                });
-                setShowtimeDetails(response.data.showtimeDetail);
-            } catch (err: any) {
-                console.error("Lỗi khi tải chi tiết suất chiếu và ghế:", err);
-                setError(err.response?.data?.message || "Không thể tải thông tin suất chiếu. Vui lòng thử lại.");
-            } finally {
-                setLoading(false);
-            }
-        };
-           useEffect(() => {
+    const fetchShowtimeDetails = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get<ChooseSeatResponseDTO>(API_URLS.BOOKING.GET_SEAT, {
+                params: {
+                    showtimeId: showtimeId,
+                },
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+            setShowtimeDetails(response.data.showtimeDetail);
+        } catch (err: any) {
+            console.error("Lỗi khi tải chi tiết suất chiếu và ghế:", err);
+            setError(err.response?.data?.message || "Không thể tải thông tin suất chiếu. Vui lòng thử lại.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         if (showtimeId) {
             fetchShowtimeDetails();
         }
     }, [showtimeId, token]);
 
-
-
-   // useEffect cho Timer
+    // New useEffect để xử lý dữ liệu ghế thô thành dữ liệu được nhóm và sắp xếp để hiển thị
     useEffect(() => {
-        // Chỉ khởi tạo timer nếu showtimeDetails đã được tải thành công
+        if (showtimeDetails && showtimeDetails.seats) {
+            const tempSeatsGroupedByRow: Record<string, DisplaySeatInfo[]> = {};
+
+            showtimeDetails.seats.forEach(seat => {
+                const displaySeat: DisplaySeatInfo = {
+                    ...seat,
+                    isCoupleSeat: seat.description === "Ghế đôi",
+                };
+
+                if (!tempSeatsGroupedByRow[seat.seatRow]) {
+                    tempSeatsGroupedByRow[seat.seatRow] = [];
+                }
+                tempSeatsGroupedByRow[seat.seatRow].push(displaySeat);
+            });
+
+            // Sắp xếp ghế trong mỗi hàng theo seatColumn
+            Object.keys(tempSeatsGroupedByRow).forEach(rowKey => {
+                tempSeatsGroupedByRow[rowKey].sort((a, b) => a.seatColumn - b.seatColumn);
+            });
+
+            // Sắp xếp các khóa hàng theo thứ tự bảng chữ cái (A, B, C, sau đó I cho ghế đôi, v.v.)
+            const tempOrderedRowKeys = Object.keys(tempSeatsGroupedByRow).sort();
+
+            setSeatsGroupedByRow(tempSeatsGroupedByRow);
+            setOrderedRowKeys(tempOrderedRowKeys);
+        }
+    }, [showtimeDetails]); // Chạy lại khi showtimeDetails thay đổi
+
+    // useEffect cho Timer
+    useEffect(() => {
+        // Chỉ khởi tạo timer nếu showtimeDetails đã được tải thành công và thời gian còn lại lớn hơn 0
         if (showtimeDetails && timeLeft > 0) {
             timerRef.current = setInterval(() => {
                 setTimeLeft((prevTime) => {
@@ -183,10 +219,7 @@ export default function SeatSelector() {
                         clearInterval(timerRef.current!); // Dừng timer
                         setBookingError("Hết thời gian chọn ghế. Vui lòng chọn lại.");
                         setSelectedSeats([]); // Xóa các ghế đã chọn
-                        // fetchShowtimeDetails(false); // Cập nhật lại sơ đồ ghế ngay lập tức
-                        // alert("Hết thời gian chọn ghế")
-                        // navigate(`/movie/${movieId}`)
-                          setOpenTimeoutDialog(true);
+                        setOpenTimeoutDialog(true); // Mở dialog hết giờ
                         return 0;
                     }
                     return prevTime - 1;
@@ -208,26 +241,25 @@ export default function SeatSelector() {
         const remainingSeconds = seconds % 60;
         return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
-      const handleCloseTimeoutDialog = () => {
+
+    const handleCloseTimeoutDialog = () => {
         setOpenTimeoutDialog(false); // Đóng dialog
-         navigate(`/movie/${movieId}`, { state: { scrollToShowtime: true } });
+        navigate(`/movie/${movieId}`, { state: { scrollToShowtime: true } }); // Chuyển hướng về trang chi tiết phim
     };
 
-
-
-
-
-    const handleSeatClick = (seat: SeatResponseDTO) => {
-        if (seat.status === 2) {
+    const handleSeatClick = (seat: ShowtimeSeatResponseDTO) => { // Sử dụng ShowtimeSeatResponseDTO để nhất quán
+        if (seat.status === 2) { // Ghế đã bán/không khả dụng
             return;
         }
 
-        const isCurrentlySelected = selectedSeats.some(s => s.id === seat.id);
+        // Kiểm tra xem ghế hiện có đang được chọn bởi người dùng trong phiên này không
+        const isCurrentlySelected = selectedSeats.some(s => s.showtimeSeatId === seat.showtimeSeatId);
 
         if (isCurrentlySelected) {
-            setSelectedSeats(selectedSeats.filter(s => s.id !== seat.id));
+            setSelectedSeats(selectedSeats.filter(s => s.showtimeSeatId !== seat.showtimeSeatId));
         } else {
-            setSelectedSeats([...selectedSeats, { ...seat, status: 1 }]);
+            // Thêm ghế vào selectedSeats. Thuộc tính 'status' ở đây chỉ để theo dõi ở frontend.
+            setSelectedSeats([...selectedSeats, { ...seat, status: 1 }]); // Đặt status là 1 (đang chọn) để theo dõi frontend
         }
         setBookingError(null);
     };
@@ -251,7 +283,7 @@ export default function SeatSelector() {
             const bookingRequest = {
                 userId: parseInt(userId),
                 showtimeId: parseInt(showtimeId || '0'),
-                selectedSeatIds: selectedSeats.map(s => s.id),
+                selectedSeatIds: selectedSeats.map(s => s.showtimeSeatId), // Gửi showtimeSeatId
             };
 
             const response = await axios.post(
@@ -306,35 +338,6 @@ export default function SeatSelector() {
 
     const showDate = showtimeDetails.startTime.split(' ')[1];
 
-    // Nhóm ghế theo hàng và sắp xếp
-    const seatsByRow = showtimeDetails.seats.reduce((acc, seat) => {
-        const match = seat.seatNumber.match(/^([A-Z]+)(\d+)$/i);
-        let rowPart = 'Unknown';
-        let colPart = '0';
-
-        if (match && match.length === 3) {
-            rowPart = match[1].toUpperCase();
-            colPart = match[2];
-        }
-
-        const rowKey = rowPart;
-        const columnKey = colPart;
-        // THÊM: Xác định ghế đôi dựa trên rowKey (ví dụ: hàng 'I' là ghế đôi)
-        const isCoupleSeat = rowKey === 'I'; 
-
-        (acc[rowKey] = acc[rowKey] || []).push({
-            ...seat,
-            rowNumber: rowKey,
-            columnNumber: columnKey,
-            isCoupleSeat: isCoupleSeat // Gán giá trị isCoupleSeat
-        });
-        return acc;
-    }, {} as Record<string, DisplaySeatInfo[]>); // Đảm bảo kiểu dữ liệu khớp
-
-    const sortedRowKeys = Object.keys(seatsByRow).sort((a, b) => a.localeCompare(b));
-    sortedRowKeys.forEach(rowKey => {
-        seatsByRow[rowKey].sort((a, b) => parseInt(a.columnNumber) - parseInt(b.columnNumber));
-    });
 
     const totalAmount = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
 
@@ -376,7 +379,7 @@ export default function SeatSelector() {
                         <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 3 }}>
                             Ngày: {showDate} - Giờ: {showtimeDetails.startTime.split(' ')[0]}
                         </Typography>
-                          {/* Timer */}
+                        {/* Timer */}
                         <Box sx={{ textAlign: 'center', mb: 3 }}>
                             <Typography variant="h6" color={timeLeft <= 60 ? 'error.main' : 'text.primary'}>
                                 Thời gian còn lại: **{formatTime(timeLeft)}**
@@ -405,15 +408,15 @@ export default function SeatSelector() {
 
                         {/* Sơ đồ ghế */}
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center', overflowX: 'auto', pb: 2 }}>
-                            {sortedRowKeys.map(rowKey => (
+                            {orderedRowKeys.map(rowKey => (
                                 <Box
                                     key={rowKey}
                                     sx={{
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 1,
-                                        // THÊM: Điều chỉnh khoảng cách giữa các hàng nếu hàng có ghế đôi
-                                        ...(rowKey === 'I' && { mb: 1.5 })
+                                        // Điều chỉnh khoảng cách giữa các hàng và căn giữa nếu hàng đó chứa ghế đôi
+                                        ...(seatsGroupedByRow[rowKey].some(s => s.isCoupleSeat) && { mb: 1.5, justifyContent: 'center' })
                                     }}
                                 >
                                     <Typography variant="body2" sx={{ width: '20px', textAlign: 'center', fontWeight: 'bold' }}>
@@ -422,19 +425,19 @@ export default function SeatSelector() {
                                     <Box
                                         sx={{
                                             display: 'grid',
-                                            // Sử dụng grid-auto-flow để tự động căn chỉnh và wrap
                                             gridAutoFlow: 'column',
                                             gap: 1,
                                             ml: 1,
-                                            // THÊM: căn giữa các ghế trong hàng nếu hàng đó là ghế đôi
-                                            ...(rowKey === 'I' && { justifyContent: 'center' }),
+                                            // Căn giữa các ghế trong hàng nếu hàng đó là ghế đôi
+                                            ...(seatsGroupedByRow[rowKey].some(s => s.isCoupleSeat) && { justifyContent: 'center' }),
                                         }}
                                     >
-                                        {seatsByRow[rowKey].map(seat => (
+                                        {seatsGroupedByRow[rowKey].map(seat => (
                                             <Seat
-                                                key={seat.id}
+                                                key={seat.showtimeSeatId} // Sử dụng showtimeSeatId làm khóa duy nhất
                                                 seat={seat}
-                                                isSelected={selectedSeats.some(s => s.id === seat.id)}
+                                                // Kiểm tra selectedSeats bằng showtimeSeatId
+                                                isSelected={selectedSeats.some(s => s.showtimeSeatId === seat.showtimeSeatId)}
                                                 onClick={() => handleSeatClick(seat)}
                                             />
                                         ))}
@@ -516,7 +519,7 @@ export default function SeatSelector() {
             </Box>
 
             <Footer />
-              <Dialog
+            <Dialog
                 open={openTimeoutDialog}
                 onClose={handleCloseTimeoutDialog} // Khi người dùng nhấn ESC hoặc click ra ngoài
                 aria-labelledby="timeout-dialog-title"
