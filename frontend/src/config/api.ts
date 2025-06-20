@@ -17,7 +17,7 @@ const API_URLS = {
   BOOKING: {
     CHOOSE_SHOWTIME: `${BOOKING_URL}/show-time`,
     GET_SEAT: `${BOOKING_URL}/seats`,
-    chooseSeat: `${BOOKING_URL}/choose-seat`,
+    TOCHECKOUT: `${BOOKING_URL}/choose-seat`,
   },
   MOVIE: {
     list: `${MOVIE_URL}/list`,
