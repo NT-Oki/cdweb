@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { Box, Button } from '@mui/material';
 
 import { DashboardContent } from '../../../layouts/dashboard';
 import API_URLS from '../../../../../config/api';
@@ -52,11 +53,37 @@ export function OverviewAnalyticsView() {
         fetchSeatsWeekly();
     }, [t, i18n.language, navigate]);
 
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+    };
+
     return (
         <DashboardContent maxWidth="xl">
-            <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 } }}>
-                {t('dashboard.welcome')} {/* "Hi, Welcome back 👋" hoặc "Chào mừng quay lại 👋" */}
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 3, md: 5 } }}>
+                <Typography variant="h4">
+                    {t('dashboard.welcome')} {/* "Hi, Welcome back 👋" hoặc "Chào mừng quay lại 👋" */}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button
+                        onClick={() => changeLanguage('vi')}
+                        sx={{
+                            color: 'primary.main',
+                            fontWeight: i18n.language === 'vi' ? 'bold' : 'normal',
+                        }}
+                    >
+                        VI
+                    </Button>
+                    <Button
+                        onClick={() => changeLanguage('en')}
+                        sx={{
+                            color: 'primary.main',
+                            fontWeight: i18n.language === 'en' ? 'bold' : 'normal',
+                        }}
+                    >
+                        EN
+                    </Button>
+                </Box>
+            </Box>
 
             <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 12, lg: 12 }}>

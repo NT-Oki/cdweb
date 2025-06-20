@@ -14,6 +14,7 @@ import * as Yup from 'yup';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import API_URLS from '../config/api';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -105,6 +106,9 @@ const Register = () => {
 
   return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <LanguageSwitcher />
+        </Box>
         <Paper elevation={4} sx={{ padding: 4, width: 400 }}>
           <Typography variant="h5" fontWeight="bold" gutterBottom>
             {t('auth.register')} {/* "Register" hoặc "Đăng ký" */}

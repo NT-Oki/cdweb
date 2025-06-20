@@ -110,49 +110,37 @@ export const routesSection: RouteObject[] = [
     {
         path: '/login',
         element: (
-            <AuthLayout>
-                <Login />
-            </AuthLayout>
+            <Login />
         ),
     },
     {
         path: '/verify-email',
         element: (
-            <AuthLayout>
-                <VerifyEmail />
-            </AuthLayout>
+            <VerifyEmail />
         ),
     },
     {
         path: '/forgot-password',
         element: (
-            <AuthLayout>
-                <ForgotPassword />
-            </AuthLayout>
+            <ForgotPassword />
         ),
     },
     {
         path: '/reset-password',
         element: (
-            <AuthLayout>
-                <ResetPassword />
-            </AuthLayout>
+            <ResetPassword />
         ),
     },
     {
         path: '/register',
         element: (
-            <AuthLayout>
-                <Register />
-            </AuthLayout>
+            <Register />
         ),
     },
     {
         path: '/sign-in',
         element: (
-            <AuthLayout>
-                <SignInPage />
-            </AuthLayout>
+            <SignInPage />
         ),
     },
     {
