@@ -1,5 +1,6 @@
 package com.example.movie_booking.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,6 +10,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @Entity
+//@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

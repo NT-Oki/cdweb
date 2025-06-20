@@ -30,6 +30,8 @@ export function UserView() {
   const [users, setUsers] = useState<UserProps[]>([]);
   const [filterName, setFilterName] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
@@ -54,14 +56,60 @@ export function UserView() {
     fetchUsers();
   }, []);
 
-  const handleOpenDialog = () => setOpenDialog(true);
+  const handleOpenDialog = (userId?: number) => {
+    if (userId) {
+      setIsEditing(true);
+      setSelectedUserId(userId);
+      fetchUserDetail(userId);
+    } else {
+      setIsEditing(false);
+      setSelectedUserId(null);
+      formik.resetForm();
+      setOpenDialog(true);
+    }
+  };
+
+  const fetchUserDetail = async (userId: number) => {
+    try {
+      setLoading(true);
+      const data = await apiRequest(
+          API_URLS.ADMIN_USER.detail(userId),
+          { method: 'GET' },
+          logout,
+          navigate
+      );
+      formik.setValues({
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        password: '',
+        confirmPassword: '',
+        phoneNumber: data.phoneNumber,
+        address: data.address,
+        gender: data.gender ? 'true' : 'false',
+        role: data.role.name,
+        cardId: data.cardId || '',
+        avatar: data.avatar || '',
+      });
+      setOpenDialog(true);
+    } catch (error: any) {
+      console.error('Failed to fetch user detail:', error.message);
+      alert('Lỗi khi lấy chi tiết người dùng: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCloseDialog = () => {
     setOpenDialog(false);
+    setIsEditing(false);
+    setSelectedUserId(null);
     formik.resetForm();
   };
 
   const formik = useFormik({
     initialValues: {
+      id: null as number | null,
       name: '',
       email: '',
       password: '',
@@ -70,20 +118,24 @@ export function UserView() {
       address: '',
       gender: '',
       role: '',
+      cardId: '',
+      avatar: '',
     },
     validationSchema: Yup.object({
       name: Yup.string().required('Bắt buộc'),
       email: Yup.string().email('Email không hợp lệ').required('Bắt buộc'),
-      password: Yup.string()
-          .required('Bắt buộc')
-          .min(8, 'Mật khẩu phải ít nhất 8 ký tự'),
-      confirmPassword: Yup.string()
-          .required('Bắt buộc')
-          .oneOf([Yup.ref('password')], 'Mật khẩu xác nhận không khớp'),
+      password: isEditing
+          ? Yup.string()
+          : Yup.string().required('Bắt buộc').min(8, 'Mật khẩu phải ít nhất 8 ký tự'),
+      confirmPassword: isEditing
+          ? Yup.string()
+          : Yup.string().required('Bắt buộc').oneOf([Yup.ref('password')], 'Mật khẩu xác nhận không khớp'),
       phoneNumber: Yup.string().required('Bắt buộc'),
       address: Yup.string().required('Bắt buộc'),
       gender: Yup.string().required('Bắt buộc'),
       role: Yup.string().required('Bắt buộc'),
+      cardId: Yup.string(),
+      avatar: Yup.string(),
     }),
     onSubmit: async (values) => {
       try {
@@ -100,13 +152,31 @@ export function UserView() {
         await fetchUsers();
         handleCloseDialog();
       } catch (error: any) {
-        console.error('Create user failed:', error.message);
-        alert('Lỗi khi tạo người dùng: ' + error.message);
+        console.error(`${isEditing ? 'Update' : 'Create'} user failed:`, error.message);
+        alert(`Lỗi khi ${isEditing ? 'cập nhật' : 'tạo'} người dùng: ` + error.message);
       } finally {
         setLoading(false);
       }
     },
   });
+
+  const handleDeleteUser = async (userId: number) => {
+    try {
+      setLoading(true);
+      await apiRequest(
+          API_URLS.ADMIN_USER.delete(userId),
+          { method: 'DELETE' },
+          logout,
+          navigate
+      );
+      await fetchUsers();
+    } catch (error: any) {
+      console.error('Delete user failed:', error.message);
+      alert('Lỗi khi xóa người dùng: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const dataFiltered: UserProps[] = applyFilter({
     inputData: users,
@@ -150,7 +220,7 @@ export function UserView() {
               variant="contained"
               color="inherit"
               startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={handleOpenDialog}
+              onClick={() => handleOpenDialog()}
           >
             New user
           </Button>
@@ -199,6 +269,8 @@ export function UserView() {
                               row={row}
                               selected={table.selected.includes(row.id)}
                               onSelectRow={() => table.onSelectRow(row.id)}
+                              onEdit={() => handleOpenDialog(row.id)}
+                              onDelete={() => handleDeleteUser(row.id)}
                           />
                       ))}
 
@@ -220,9 +292,8 @@ export function UserView() {
           />
         </Card>
 
-        {/* Dialog thêm user */}
         <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-          <DialogTitle>Thêm người dùng</DialogTitle>
+          <DialogTitle>{isEditing ? 'Chỉnh sửa người dùng' : 'Thêm người dùng'}</DialogTitle>
           <form onSubmit={formik.handleSubmit}>
             <DialogContent>
               <TextField
@@ -241,24 +312,28 @@ export function UserView() {
                   error={formik.touched.email && !!formik.errors.email}
                   helperText={formik.touched.email && formik.errors.email}
               />
-              <TextField
-                  fullWidth
-                  margin="normal"
-                  label="Mật khẩu"
-                  type="password"
-                  {...formik.getFieldProps('password')}
-                  error={formik.touched.password && !!formik.errors.password}
-                  helperText={formik.touched.password && formik.errors.password}
-              />
-              <TextField
-                  fullWidth
-                  margin="normal"
-                  label="Xác nhận mật khẩu"
-                  type="password"
-                  {...formik.getFieldProps('confirmPassword')}
-                  error={formik.touched.confirmPassword && !!formik.errors.confirmPassword}
-                  helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
-              />
+              {!isEditing && (
+                  <>
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        label="Mật khẩu"
+                        type="password"
+                        {...formik.getFieldProps('password')}
+                        error={formik.touched.password && !!formik.errors.password}
+                        helperText={formik.touched.password && formik.errors.password}
+                    />
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        label="Xác nhận mật khẩu"
+                        type="password"
+                        {...formik.getFieldProps('confirmPassword')}
+                        error={formik.touched.confirmPassword && !!formik.errors.confirmPassword}
+                        helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
+                    />
+                  </>
+              )}
               <TextField
                   fullWidth
                   margin="normal"
@@ -274,6 +349,22 @@ export function UserView() {
                   {...formik.getFieldProps('address')}
                   error={formik.touched.address && !!formik.errors.address}
                   helperText={formik.touched.address && formik.errors.address}
+              />
+              <TextField
+                  fullWidth
+                  margin="normal"
+                  label="CMND/CCCD"
+                  {...formik.getFieldProps('cardId')}
+                  error={formik.touched.cardId && !!formik.errors.cardId}
+                  helperText={formik.touched.cardId && formik.errors.cardId}
+              />
+              <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Avatar (URL)"
+                  {...formik.getFieldProps('avatar')}
+                  error={formik.touched.avatar && !!formik.errors.avatar}
+                  helperText={formik.touched.avatar && formik.errors.avatar}
               />
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, paddingLeft: 1 }}>
                 <Typography sx={{ mr: 2, paddingBottom: 1 }}>Giới tính:</Typography>
@@ -327,7 +418,6 @@ export function UserView() {
           </form>
         </Dialog>
 
-        {/* Dialog xác nhận xóa */}
         <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
           <DialogTitle>Xác nhận xóa</DialogTitle>
           <DialogContent>
