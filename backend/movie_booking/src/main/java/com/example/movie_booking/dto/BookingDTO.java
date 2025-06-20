@@ -14,6 +14,6 @@ public class BookingDTO {
     private long bookingStatusId;
     private String bookingCode;
     private Integer totalAmount;
-    private List<Long> seats;
+    private List<Long> showtimeSeats;
 
 }

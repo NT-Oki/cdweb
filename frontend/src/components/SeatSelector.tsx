@@ -25,6 +25,7 @@ import Footer from './Footer';
 import API_URLS from '../config/api';
 
 interface ShowtimeSeatResponseDTO {
+    seatId: number;
     showtimeSeatId: number;
     seatNumber: string;
     seatRow: string;
@@ -125,11 +126,17 @@ export default function SeatSelector() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [bookingError, setBookingError] = useState<string | null>(null);
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
+    const userId=localStorage.getItem("userId")
+    
+
+    // State cho ghế được nhóm theo hàng để hiển thị
     const [seatsGroupedByRow, setSeatsGroupedByRow] = useState<Record<string, DisplaySeatInfo[]>>({});
     const [orderedRowKeys, setOrderedRowKeys] = useState<string[]>([]);
-    const [timeLeft, setTimeLeft] = useState<number>(600);
-    const timerRef = useRef<number | null>(null);
+
+    // State cho bộ đếm ngược (thời gian còn lại tính bằng giây)
+    const [timeLeft, setTimeLeft] = useState<number>(600); // 10 phút = 600 giây
+    const timerRef = useRef<number | null>(null); // Để lưu trữ ID của setInterval cho timer
     const [openTimeoutDialog, setOpenTimeoutDialog] = useState<boolean>(false);
 
     const fetchShowtimeDetails = async () => {
@@ -229,26 +236,38 @@ export default function SeatSelector() {
             return;
         }
         setBookingError(null);
-        const userId = localStorage.getItem('userId');
-        if (!token || !userId) {
-            setBookingError(t('auth.login.required'));
-            toast.error(t('auth.login.required'));
-            setTimeout(() => navigate('/login'), 1500);
-            return;
-        }
+
+        // if (!token || !userId) {
+        //     setBookingError(t('auth.login.required'));
+        //     toast.error(t('auth.login.required'));
+        //     setTimeout(() => navigate('/login'), 1500);
+        //     return;
+        // }
+
         try {
             const bookingRequest = {
-                userId: parseInt(userId),
-                showtimeId: parseInt(showtimeId || '0'),
-                selectedSeatIds: selectedSeats.map((s) => s.showtimeSeatId),
+                bookingId:Number(bookingId),
+                showtimeSeats: selectedSeats.map(s => s.showtimeSeatId), // Gửi showtimeSeatId
+                totalAmount:totalAmount
             };
-            const response = await axios.post(API_URLS.BOOKING.CHOOSE_SHOWTIME, bookingRequest, {
-                headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.language },
-            });
+
+            const response = await axios.post(
+                API_URLS.BOOKING.TOCHECKOUT,
+                bookingRequest,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Accept-Language': i18n.language
+                    },
+                }
+            );
+
             const receivedBookingId = response.data.bookingId;
-            localStorage.setItem('bookingId', receivedBookingId);
+            localStorage.setItem("bookingId", receivedBookingId);
+            sessionStorage.setItem("bookingCheckoutDto", JSON.stringify(response.data));
             toast.success(t(response.data.message || 'booking.create.success', { 0: receivedBookingId }));
-            navigate('/checkout');
+            navigate("/checkout");
+
         } catch (err: any) {
             setBookingError(t(err.response?.data?.message || 'booking.create.failed'));
             toast.error(t(err.response?.data?.message || 'booking.create.failed'));

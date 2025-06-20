@@ -1,17 +1,25 @@
 package com.example.movie_booking.service;
 
 import com.example.movie_booking.dto.BookingDTO;
+import com.example.movie_booking.dto.booking.BookingCheckoutDto;
 import com.example.movie_booking.dto.booking.ChooseSeatResponseDTO;
 import com.example.movie_booking.dto.booking.ShowtimeSeatResponseDTO;
+import com.example.movie_booking.dto.payment.PaymentRequestDTO;
 import com.example.movie_booking.model.*;
 import com.example.movie_booking.repository.*;
+import com.example.movie_booking.util.CodeGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -29,6 +37,7 @@ public class BookingService {
     ISeatRepository seatRepository;
     @Autowired
     IShowTimeSeatRepository showTimeSeatRepository;
+
 
     public Booking save(Booking booking) {
         return bookingRepository.save(booking);
@@ -52,19 +61,31 @@ public class BookingService {
         return bookingRepository.getReferenceById(id);
     }
 
-    public Booking addSeats(BookingDTO dto) {
-        Booking booking = bookingRepository.getReferenceById(dto.getBookingId());
+    public BookingCheckoutDto addSeats(BookingDTO dto) {
+        Booking booking = bookingRepository.findById(dto.getBookingId()).orElse(null);
+        if (booking == null) {
+            return null;
+        }
         List<BookingSeat> seatList = new ArrayList<>();
-        BookingSeat bookingSeat = new BookingSeat();
-        for (Long l : dto.getSeats()) {
-            Seat seat = seatRepository.getReferenceById(l);
+
+        for (Long l : dto.getShowtimeSeats()) {
+            BookingSeat bookingSeat = new BookingSeat();
+            ShowTimeSeat showTimeSeat=showTimeSeatRepository.findById(l).orElse(null);
+            if(showTimeSeat==null){
+                return null;
+            }
+            Seat seat = showTimeSeat.getSeat();
             bookingSeat.setBooking(booking);
             bookingSeat.setSeat(seat);
-            bookingSeat.setPrice(seat.getPrice());
+            bookingSeat.setPrice(showTimeSeat.getPrice());
             seatList.add(bookingSeat);
         }
+        bookingSeatRepository.deleteByBookingId(booking.getId());
         bookingSeatRepository.saveAll(seatList);
-        return booking;
+        booking.setTotalAmount(dto.getTotalAmount());
+        bookingRepository.save(booking);
+        BookingCheckoutDto bookingCheckoutDto=new BookingCheckoutDto(booking);
+        return bookingCheckoutDto;
     }
     public Booking updateTotalAmount(long id){
         Booking booking = bookingRepository.getReferenceById(id);
@@ -90,6 +111,51 @@ public class BookingService {
         ChooseSeatResponseDTO responseDTO=new ChooseSeatResponseDTO(showtime,showtimeSeatResponseDTOS);
         return responseDTO;
     }
+    public Booking paymentSuccessful(long bookingId){
+        Booking booking =bookingRepository.findById(bookingId).orElse(null);
+        if(booking==null){
+            return null;
+        }
+        String bookingCode= CodeGenerator.generateBookingCode();
+        booking.setCodeBooking(bookingCode);
+        Booking booking1=bookingRepository.save(booking);
+        return booking1;
+    }
+    public String buildQRContent(long bookingId) throws Exception {
+        Booking booking =bookingRepository.findById(bookingId).orElse(null);
+        if(booking==null){
+            return null;
+        }
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("bookingId", bookingId);
+        data.put("name", booking.getUser().getName());
+        data.put("movie", booking.getShowTime().getMovie().getNameMovie());
+        data.put("time", booking.getShowTime().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")));
+        data.put("seats", booking.getBookingSeats().stream()
+                .map(s -> s.getSeat().getSeatNumber())
+                .collect(Collectors.joining(",")));
+        data.put("room", booking.getShowTime().getRoom().getRoomName());
+        data.put("bookingCode",booking.getCodeBooking());
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(data);
+    }
+
+    public List<BookingCheckoutDto> getAllBookings() {
+        List<BookingCheckoutDto> list=new ArrayList<>();
+        List<Booking> bookings=bookingRepository.findAll();
+        for(Booking booking:bookings){
+            BookingCheckoutDto bookingCheckoutDto=new BookingCheckoutDto(booking);
+            list.add(bookingCheckoutDto);
+        }
+        return list;
+    }
+
+
+//    public String createQR(PaymentRequestDTO dto){
+//        String qr="https://img.vietqr.io/image/BIDV-3148149366-compact.png?amount="+dto.getAmount()+
+//                "&addInfo="+dto.getAddInfo();
+//        return qr;
+//    }
 
 
 }

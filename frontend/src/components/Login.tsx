@@ -57,6 +57,7 @@ const Login = () => {
       const mappedRole = rawRole === 'ROLE_ADMIN' ? 'admin' : 'user';
 
       login(
+          
           {
             email: data.email,
             userId: data.userId,
@@ -67,6 +68,8 @@ const Login = () => {
           data.token
       );
       toast.success(t('auth.login.success'));
+      localStorage.setItem("userId",data.userId)
+      console.log('Chuyển hướng sau đăng nhập:', mappedRole === 'admin' ? '/admin/dashboard' : '/');
       navigate(mappedRole === 'admin' ? '/admin/dashboard' : '/', { replace: true });
     } catch (error: any) {
       setServerErrors({ message: t('auth.login.failed') });

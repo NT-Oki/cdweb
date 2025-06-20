@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 public class ShowtimeSeatResponseDTO {
+    private long seatId;
     private Long showtimeSeatId;
     private String seatNumber;
     private String seatRow;
@@ -23,6 +24,7 @@ public class ShowtimeSeatResponseDTO {
     private LocalDateTime lockExpiresAt;
     private Long bookingId;
     public ShowtimeSeatResponseDTO(ShowTimeSeat seat) {
+        this.seatId = seat.getSeat().getId();
        this.showtimeSeatId=seat.getId();
        this.seatNumber=seat.getSeat().getSeatNumber();
        this.seatRow=seat.getSeat().getSeatRow();
