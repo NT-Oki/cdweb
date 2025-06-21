@@ -8,7 +8,6 @@ import API_URLS from '../config/api';
 import Header from './Header';
 import Footer from './Footer';
 import Banner from './Banner';
-
 interface Movie {
     id: number;
     nameMovie: string;
@@ -27,7 +26,6 @@ interface StatusFilm {
     id: number;
     name: string;
 }
-
 export default function Home() {
     const { t, i18n } = useTranslation();
     const [movies, setMovies] = useState<Movie[] | null>([]);

@@ -13,6 +13,7 @@ const ADMIN_SHOWTIMES_URL = `${ADMIN_URL}/showtimes`;
 const ADMIN_MOVIES_URL = `${ADMIN_URL}/movies`;
 const ADMIN_USER_URL = `${BASE_URL}/admin/users`;
 const ADMIN_BOOKING_URL = `${ADMIN_URL}/bookings`;
+const PAYMENT_URL = `${BOOKING_URL}/payment`;
 
 const API_URLS = {
   BOOKING: {
@@ -45,8 +46,8 @@ const API_URLS = {
     showtime: {
       list_showtime: `${ADMIN_SHOWTIMES_URL}/`,
       add: `${ADMIN_SHOWTIMES_URL}/`,
-      delete:(id:number)=> `${ADMIN_SHOWTIMES_URL}/{id}`,
-      update:(id:number)=> `${ADMIN_SHOWTIMES_URL}/{id}`
+      delete:(id:number)=> `${ADMIN_SHOWTIMES_URL}/status/${id}`,
+      update:(id:number)=> `${ADMIN_SHOWTIMES_URL}/${id}`
     },
     movie: {
       list_movie: `${ADMIN_MOVIES_URL}/list`,
@@ -66,6 +67,9 @@ const API_URLS = {
     delete: (id: number) => `${ADMIN_USER_URL}/delete/${id}`,
     deleteMultiple: `${ADMIN_USER_URL}/delete-multiple`,
     detail: (id: number) => `${ADMIN_USER_URL}/detail/${id}`,
+  },
+  PAYMENT:{
+    create_payment:`${PAYMENT_URL}/create_payment`
   }
 };
 

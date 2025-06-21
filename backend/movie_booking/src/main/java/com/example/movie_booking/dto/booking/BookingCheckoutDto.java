@@ -57,7 +57,7 @@ public class BookingCheckoutDto {
         this.quantityCoupleSeat = quantityCoupleSeat;
         this.totalPriceNormalSeat = totalPriceNormalSeat;
         this.totalPriceCoupleSeat = totalPriceCoupleSeat;
-        this.totalPrice = booking.getTotalAmount();
+        this.totalPrice = booking.getTotalAmount()==null?null   :booking.getTotalAmount();
         this.movieName=booking.getShowTime().getMovie().getNameMovie();
         this.startTime=booking.getShowTime().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
         this.roomName=booking.getShowTime().getRoom().getRoomName();

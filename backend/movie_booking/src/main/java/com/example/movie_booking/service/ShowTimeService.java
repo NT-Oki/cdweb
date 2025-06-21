@@ -36,6 +36,8 @@ public class ShowTimeService {
 
     @Autowired
     MessageSource messageSource;
+    @Autowired
+    IStatusFilmRepository statusFilmRepository;
 
 public Showtime getShowtime(long id) {
     return showTimeRepository.getReferenceById(id);
@@ -134,5 +136,15 @@ public List<Showtime> getShowTimeByMovieId(long movieId) {
     }
     public Showtime update(long id, ShowTimeUpdateDTO dto){
         return null;
+    }
+    public Showtime updateStatusShowTime(long id){
+        Showtime showtime = showTimeRepository.findById(id).orElse(null);
+        if(showtime==null){
+            return null;
+        }
+        StatusFilm statusFilm = statusFilmRepository.getReferenceById(3L);
+        showtime.getMovie().setStatusFilmId(statusFilm);
+        Showtime showtime1=showTimeRepository.save(showtime);
+        return showtime1;
     }
 }

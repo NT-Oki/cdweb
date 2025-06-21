@@ -37,11 +37,11 @@ interface BookingCheckoutDto {
   totalPriceNormalSeat: number;
   quantityCoupleSeat: number;
   totalPriceCoupleSeat: number;
-  totalPrice: number;
+  totalPrice: number|null;
   movieName: string;
   startTime: string;
   roomName: string;
-  bookingCode: string;
+  bookingCode: string|null;
   userName: string;
   userEmail: string;
   userCode: string;
@@ -94,7 +94,7 @@ function BookingAdmin() {
       booking.movieName.toLowerCase().includes(searchText.toLowerCase()) ||
       booking.roomName.toLowerCase().includes(searchText.toLowerCase()) ||
       booking.userName.toLowerCase().includes(searchText.toLowerCase()) ||
-      booking.bookingCode.toLowerCase().includes(searchText.toLowerCase())
+      booking.bookingCode?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   // Mở hộp thoại xác nhận xóa
@@ -177,18 +177,18 @@ function BookingAdmin() {
               {filteredBookings.length > 0 ? (
                 filteredBookings.map((booking) => (
                   <TableRow key={booking.bookingId}>
-                    <TableCell>{booking.bookingCode}</TableCell>
+                    <TableCell>{booking?.bookingCode==null?"":booking.bookingCode}</TableCell>
                     <TableCell>{booking.userName}</TableCell>
                     {/* <TableCell>{booking.userEmail}</TableCell> */}
                     <TableCell>{booking.movieName}</TableCell>
                     <TableCell>{booking.roomName}</TableCell>
-                    <TableCell>{booking.startTime}</TableCell>
+                    <TableCell>{booking?.startTime||""}</TableCell>
                     <TableCell>{booking.nameSeats.join(', ')}</TableCell>
                     {/* <TableCell>{booking.quantityNormalSeat}</TableCell>
                     <TableCell>{booking.totalPriceNormalSeat.toLocaleString('vi-VN')} VND</TableCell>
                     <TableCell>{booking.quantityCoupleSeat}</TableCell>
                     <TableCell>{booking.totalPriceCoupleSeat.toLocaleString('vi-VN')} VND</TableCell> */}
-                    <TableCell>{booking.totalPrice.toLocaleString('vi-VN')} VND</TableCell>
+                    <TableCell>{booking.totalPrice==null?"":booking.totalPrice?.toLocaleString('vi-VN')} VND</TableCell>
                     <TableCell>
                       {/* Chức năng chỉnh sửa không còn phù hợp trực tiếp với BookingCheckoutDto */}
                       {/* <IconButton onClick={() => handleOpenDialog(sc)} color="primary" size="small">

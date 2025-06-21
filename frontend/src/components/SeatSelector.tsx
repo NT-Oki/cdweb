@@ -33,9 +33,9 @@ interface ShowtimeSeatResponseDTO {
     description: string;
     price: number;
     status: number;
-    locked_by_user_id: Number;
-    lockedAt: string;
-    lockExpiresAt: string;
+    locked_by_user_id: Number|null;
+    lockedAt: string|null;
+    lockExpiresAt: string|null;
     bookingId: Number;
 }
 
@@ -135,7 +135,7 @@ export default function SeatSelector() {
     const [orderedRowKeys, setOrderedRowKeys] = useState<string[]>([]);
 
     // State cho bộ đếm ngược (thời gian còn lại tính bằng giây)
-    const [timeLeft, setTimeLeft] = useState<number>(600); // 10 phút = 600 giây
+    const [timeLeft, setTimeLeft] = useState<number>(15); // 10 phút = 600 giây
     const timerRef = useRef<number | null>(null); // Để lưu trữ ID của setInterval cho timer
     const [openTimeoutDialog, setOpenTimeoutDialog] = useState<boolean>(false);
 
@@ -143,8 +143,8 @@ export default function SeatSelector() {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<ChooseSeatResponseDTO>(API_URLS.BOOKING.GET_SEAT, {
-                params: { showtimeId: showtimeId },
+            const response = await axios.get(API_URLS.BOOKING.GET_SEAT, {
+                params: { showtimeId: Number(showtimeId) },
                 headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.language },
             });
             setShowtimeDetails(response.data.showtimeDetail);
@@ -213,7 +213,7 @@ export default function SeatSelector() {
 
     const handleCloseTimeoutDialog = () => {
         setOpenTimeoutDialog(false);
-        navigate(`/movie-${movieId}`, { state: { scrollToShowtime: true } });
+        navigate(`/movie/${movieId}`, { state: { scrollToShowtime: true } });
     };
 
     const handleSeatClick = (seat: ShowtimeSeatResponseDTO) => {

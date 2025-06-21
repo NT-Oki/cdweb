@@ -21,5 +21,6 @@ public interface IShowTimeSeatRepository extends JpaRepository<ShowTimeSeat,Long
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<ShowTimeSeat> findById(Long id); // Override để có Pessimistic Lock
     List<ShowTimeSeat> findByShowtimeId(long id);
+    List<ShowTimeSeat> findByBookingId(long id);
 
 }

@@ -149,7 +149,7 @@ export function UserView() {
             logout,
             navigate
         );
-        await fetchUsers();
+         fetchUsers();
         handleCloseDialog();
       } catch (error: any) {
         console.error(`${isEditing ? 'Update' : 'Create'} user failed:`, error.message);

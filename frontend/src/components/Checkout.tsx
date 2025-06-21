@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Typography, TextField, Button, Toolbar } from "@mui/material";
+import { Box, Typography, TextField, Button, Toolbar, Alert } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useTranslation } from 'react-i18next';
 import Header from "./Header";
@@ -27,132 +27,137 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const dataJson = sessionStorage.getItem("bookingCheckoutDto");
   const data: BookingCheckoutDto | null = dataJson ? JSON.parse(dataJson) : null;
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
-  const getTicket = async () => {
-    const request = {
-      amount: data?.totalPrice,
-      addInfo: t('booking.payment.info'), // "Thanh toán vé xem phim" hoặc "Movie ticket payment"
-    };
 
-    try {
-      const res = await axios.post(
-          API_URLS.BOOKING.CREATE_BOOKING_SUCCESSFUL(Number(data?.bookingId)),
-          {},
+    const getTicket = async () => {
+      try {
+        const response = await axios.get(
+          API_URLS.PAYMENT.create_payment,
           {
+            params: {
+              amount: Number(data?.totalPrice),
+              bookingId: data?.bookingId
+            },
             headers: {
               Authorization: `Bearer ${token}`,
-              'Accept-Language': i18n.language,
-            },
+            }
           }
-      );
+        );
+        if (response.data.status === 'OK' && response.data.url) {
+          setMessage('Đang chuyển hướng đến trang thanh toán VNPAY...');
+          // Chuyển hướng người dùng đến URL của VNPAY
+          window.location.href = response.data.url;
+        } else {
+          setError(response.data.message || 'Có lỗi xảy ra khi tạo thanh toán.');
+        }
 
-      // Gửi bookingId sang trang "/ticket"
-      navigate("/ticket", {
-        state: { bookingId: res.data.id },
-      });
-    } catch (error) {
-      console.error("Lỗi khi gửi thanh toán:", error);
-    }
-  };
+      } catch (error) {
+        console.error("Lỗi khi gửi thanh toán:", error);
+      }
+    };
 
-  return (
+
+
+    return (
       <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: '100vh',
-          }}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+        }}
       >
         <Header />
         <Toolbar />
 
         <Box sx={{ p: 4, bgcolor: "#f9fafc", minHeight: "100vh" }}>
           <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                maxWidth: 1200,
-                mx: "auto",
-                gap: 4,
-              }}
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              maxWidth: 1200,
+              mx: "auto",
+              gap: 4,
+            }}
           >
             {/* left===================================== */}
             <Box sx={{ flex: 2 }}>
               {/* Tóm tắt đơn hàng */}
               <Box sx={{ bgcolor: "white", borderRadius: 2, boxShadow: 1 }}>
                 <Typography
-                    variant="h6"
-                    sx={{
-                      mb: 2,
-                      fontWeight: "bold",
-                      backgroundColor: "rgb(149, 170, 201)",
-                      position: "relative",
-                      width: "100%",
-                      borderRadius: 2,
-                      height: "50px",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
+                  variant="h6"
+                  sx={{
+                    mb: 2,
+                    fontWeight: "bold",
+                    backgroundColor: "rgb(149, 170, 201)",
+                    position: "relative",
+                    width: "100%",
+                    borderRadius: 2,
+                    height: "50px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
                 >
                   {t('booking.summary')} {/* "Tóm tắt đơn hàng" hoặc "Order Summary" */}
                 </Typography>
                 <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      mb: 1,
-                      textTransform: "uppercase",
-                      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
-                      p: "0 12px 12px 12px",
-                    }}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 1,
+                    textTransform: "uppercase",
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                    p: "0 12px 12px 12px",
+                  }}
                 >
                   <Typography
-                      sx={{
-                        fontWeight: "bold",
-                        color: "rgb(149, 170, 201)",
-                      }}
+                    sx={{
+                      fontWeight: "bold",
+                      color: "rgb(149, 170, 201)",
+                    }}
                   >
                     {t('booking.description')} {/* "Mô tả" hoặc "Description" */}
                   </Typography>
                   <Typography
-                      sx={{
-                        fontWeight: "bold",
-                        color: "rgb(149, 170, 201)",
-                      }}
+                    sx={{
+                      fontWeight: "bold",
+                      color: "rgb(149, 170, 201)",
+                    }}
                   >
                     {t('booking.quantity')} {/* "Số lượng" hoặc "Quantity" */}
                   </Typography>
                   <Typography
-                      sx={{
-                        fontWeight: "bold",
-                        color: "rgb(149, 170, 201)",
-                      }}
+                    sx={{
+                      fontWeight: "bold",
+                      color: "rgb(149, 170, 201)",
+                    }}
                   >
                     {t('booking.subtotal')} {/* "Thành tiền" hoặc "Subtotal" */}
                   </Typography>
                 </Box>
                 <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      mb: 2,
-                      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
-                      p: 1,
-                    }}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 2,
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                    p: 1,
+                  }}
                 >
                   <Typography>{t('seat.normal')} {/* "Ghế Đơn" hoặc "Normal Seat" */}</Typography>
                   <Typography>{data?.quantityNormalSeat}</Typography>
                   <Typography>{data?.totalPriceNormalSeat.toLocaleString('vi-VN')} vnđ</Typography>
                 </Box>
                 <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      mb: 2,
-                      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
-                      p: 1,
-                    }}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 2,
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                    p: 1,
+                  }}
                 >
                   <Typography>{t('seat.couple')} {/* "Ghế Đôi" hoặc "Couple Seat" */}</Typography>
                   <Typography>{data?.quantityCoupleSeat}</Typography>
@@ -210,7 +215,14 @@ const CheckoutPage = () => {
           </Box>
         </Box>
         <Footer />
+        { message && <Alert severity="info" sx={{ mt: 2 }}>{message}</Alert> }
+    { error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert> }
       </Box>
+      
+  
+    
+    
+                
   );
 };
 
