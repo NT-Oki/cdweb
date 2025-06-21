@@ -46,8 +46,8 @@ const API_URLS = {
     showtime: {
       list_showtime: `${ADMIN_SHOWTIMES_URL}/`,
       add: `${ADMIN_SHOWTIMES_URL}/`,
-      delete:(id:number)=> `${ADMIN_SHOWTIMES_URL}/{id}`,
-      update:(id:number)=> `${ADMIN_SHOWTIMES_URL}/{id}`
+      delete:(id:number)=> `${ADMIN_SHOWTIMES_URL}/status/${id}`,
+      update:(id:number)=> `${ADMIN_SHOWTIMES_URL}/${id}`
     },
     movie: {
       list_movie: `${ADMIN_MOVIES_URL}/list`,

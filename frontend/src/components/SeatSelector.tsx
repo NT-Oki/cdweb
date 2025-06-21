@@ -135,7 +135,7 @@ export default function SeatSelector() {
     const [orderedRowKeys, setOrderedRowKeys] = useState<string[]>([]);
 
     // State cho bộ đếm ngược (thời gian còn lại tính bằng giây)
-    const [timeLeft, setTimeLeft] = useState<number>(600); // 10 phút = 600 giây
+    const [timeLeft, setTimeLeft] = useState<number>(15); // 10 phút = 600 giây
     const timerRef = useRef<number | null>(null); // Để lưu trữ ID của setInterval cho timer
     const [openTimeoutDialog, setOpenTimeoutDialog] = useState<boolean>(false);
 
@@ -213,7 +213,7 @@ export default function SeatSelector() {
 
     const handleCloseTimeoutDialog = () => {
         setOpenTimeoutDialog(false);
-        navigate(`/movie-${movieId}`, { state: { scrollToShowtime: true } });
+        navigate(`/movie/${movieId}`, { state: { scrollToShowtime: true } });
     };
 
     const handleSeatClick = (seat: ShowtimeSeatResponseDTO) => {

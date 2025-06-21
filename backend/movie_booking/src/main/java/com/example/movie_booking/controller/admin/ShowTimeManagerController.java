@@ -50,5 +50,14 @@ public class ShowTimeManagerController {
                     messageSource.getMessage("showtime.update.failed", new Object[]{e.getMessage()}, locale)));
         }
     }
+    @PostMapping("/status/{id}")
+    public ResponseEntity<?> updateStatus(@PathVariable long id){
+        try{
+            Showtime showtime = showTimeService.updateStatusShowTime(id);
+            return ResponseEntity.ok(showtime);
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
 }

@@ -162,7 +162,7 @@ function ShowTimeAdmin() {
     if (showtimeToDeleteId === null) return;
 
     try {
-      const response = await axios.delete(API_URLS.ADMIN.showtime.delete(showtimeToDeleteId), { // NOTE: Sử dụng DELETE thay vì PUT cho xóa
+      const response = await axios.post(API_URLS.ADMIN.showtime.delete(showtimeToDeleteId),{}, { // NOTE: Sử dụng DELETE thay vì PUT cho xóa
         headers: {
           Authorization: `Bearer ${token}`
         }
