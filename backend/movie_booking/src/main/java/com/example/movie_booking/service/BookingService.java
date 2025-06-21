@@ -147,7 +147,7 @@ public class BookingService {
 
     public List<BookingCheckoutDto> getAllBookings() {
         List<BookingCheckoutDto> list=new ArrayList<>();
-        List<Booking> bookings=bookingRepository.findAll();
+        List<Booking> bookings=bookingRepository.findByCodeBookingIsNotNull();
         for(Booking booking:bookings){
             BookingCheckoutDto bookingCheckoutDto=new BookingCheckoutDto(booking);
             list.add(bookingCheckoutDto);

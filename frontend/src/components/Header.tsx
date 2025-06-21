@@ -60,31 +60,7 @@ export default function Header() {
               {t('app.name')} {/* "Cinema" hoặc "Rạp phim" */}
             </Link>
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button component={Link} to="/movie" color="inherit">
-              {t('nav.movies')} {/* "Phim" hoặc "Movies" */}
-            </Button>
-            <Button component={Link} to="/cinemalist" color="inherit">
-              {t('nav.cinemas')} {/* "Rạp" hoặc "Cinemas" */}
-            </Button>
-            <Button component={Link} to="/showtimeschedule" color="inherit">
-              {t('nav.showtimes')} {/* "Lịch chiếu" hoặc "Showtimes" */}
-            </Button>
-            <Button color="inherit">{t('nav.promotions')} {/* "Ưu đãi" hoặc "Promotions" */}</Button>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 2 }}>
-            <TextField
-                variant="outlined"
-                size="small"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder={t('search.placeholder')}
-                sx={{ backgroundColor: 'white', borderRadius: '5px', marginRight: 1 }}
-            />
-            <IconButton onClick={handleSearchSubmit} color="inherit">
-              <Search />
-            </IconButton>
-          </Box>
+         
           <IconButton color="inherit" onClick={handleLanguageMenuOpen}>
             <Language />
           </IconButton>
