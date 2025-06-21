@@ -170,7 +170,7 @@ function BookingAdmin() {
                 {/* <TableCell>Số lượng ghế đôi</TableCell>
                 <TableCell>Tổng tiền ghế đôi</TableCell> */}
                 <TableCell>Tổng tiền</TableCell>
-                <TableCell>Hành động</TableCell>
+                {/* <TableCell>Hành động</TableCell> */}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -189,19 +189,19 @@ function BookingAdmin() {
                     <TableCell>{booking.quantityCoupleSeat}</TableCell>
                     <TableCell>{booking.totalPriceCoupleSeat.toLocaleString('vi-VN')} VND</TableCell> */}
                     <TableCell>{booking.totalPrice==null?"":booking.totalPrice?.toLocaleString('vi-VN')} VND</TableCell>
-                    <TableCell>
+                    {/* <TableCell> */}
                       {/* Chức năng chỉnh sửa không còn phù hợp trực tiếp với BookingCheckoutDto */}
                       {/* <IconButton onClick={() => handleOpenDialog(sc)} color="primary" size="small">
                         <EditIcon />
                       </IconButton> */}
-                      <IconButton
+                      {/* <IconButton
                         onClick={() => handleOpenConfirmDelete(booking.bookingId)}
                         color="error"
                         size="small"
                       >
                         <DeleteIcon />
                       </IconButton>
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
                 ))
               ) : (
